@@ -24,7 +24,7 @@ def disconnect():
 
 while not connected:
     try:
-        sio.connect("http://localhost:3000")
+        sio.connect("http://192.168.29.116:3000")
         sio.wait()
         print("Socket established")
         connected = True
