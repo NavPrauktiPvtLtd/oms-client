@@ -12,7 +12,7 @@ connected = False
 
 @sio.event
 def connect():
-    print("connection established")
+    logger.info('Connection establised')
 
 
 @sio.event
@@ -20,17 +20,27 @@ def my_message(data):
     print("message received with ", data)
     sio.emit("my response", {"response": "my response"})
 
+@sio.event
+def upload_video(data):
+    filename = data['filename']
+    try:
+        with open(filename, "wb") as f:
+            f.write(data['file_content'])
+        logger.info(f'{filename} saved')
+    except Exception as e:
+        logger.error(e)
+
+
 
 @sio.event
 def disconnect():
-    print("disconnected from server")
+    logger.info('Disconnected from server')
 
 
 while not connected:
     try:
-        sio.connect("http://192.168.29.116:3000")
+        sio.connect("http://192.168.29.233:3000")
         sio.wait()
-        print("Socket established")
         connected = True
     except Exception as ex:
         logger.error(
