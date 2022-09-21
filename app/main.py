@@ -1,6 +1,18 @@
+import os
+from pathlib import Path
 import socketio
 import time
 from logger.logger import setup_applevel_logger
+
+
+BASE_DIR = str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+VIDEOS_DIR = os.path.join(BASE_DIR, "videos")
+
+
+def file_path(x): return os.path.join(VIDEOS_DIR, x)
+
+if not os.path.exists(VIDEOS_DIR):
+    os.makedirs(VIDEOS_DIR)
 
 
 logger = setup_applevel_logger(__name__)
@@ -22,7 +34,7 @@ def my_message(data):
 
 @sio.event
 def upload_video(data):
-    filename = data['filename']
+    filename = file_path(data['filename'])
     try:
         with open(filename, "wb") as f:
             f.write(data['file_content'])
@@ -39,7 +51,7 @@ def disconnect():
 
 while not connected:
     try:
-        sio.connect("http://192.168.29.233:3000")
+        sio.connect("http://127.0.0.0:3000")
         sio.wait()
         connected = True
     except Exception as ex:
