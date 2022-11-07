@@ -1,61 +1,67 @@
-import os
-from pathlib import Path
-import socketio
-import time
+import subprocess
+import paho.mqtt.client as mqtt
+import ast 
+from threading import Thread
 from logger.logger import setup_applevel_logger
 
-
-BASE_DIR = str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-VIDEOS_DIR = os.path.join(BASE_DIR, "videos")
-
-
-def file_path(x): return os.path.join(VIDEOS_DIR, x)
-
-if not os.path.exists(VIDEOS_DIR):
-    os.makedirs(VIDEOS_DIR)
-
+UNQIUE_ID = "GQNQQRudtv2rfJG"
 
 logger = setup_applevel_logger(__name__)
 
-sio = socketio.Client()
 
-connected = False
+def display_url(url):
+    logger.info(f'URL received: {url}')
+    subprocess.call(["pkill", "firefox"])
+    subprocess.call(["firefox", f"--kiosk={url}"])
 
+def display_url_handler(message):
+    data = str(message.payload.decode("utf-8"))
+    newData = ast.literal_eval(data)
 
-@sio.event
-def connect():
-    logger.info('Connection establised')
+    logger.info("Message received: {newData}")
 
+    url = newData["url"]
+    if not url:
+        logger.error('URL not found')
+        return
+    t = Thread(target=display_url, args=(url,))
+    t.start()
 
-@sio.event
-def my_message(data):
-    print("message received with ", data)
-    sio.emit("my response", {"response": "my response"})
-
-@sio.event
-def upload_video(data):
-    filename = file_path(data['filename'])
-    try:
-        with open(filename, "wb") as f:
-            f.write(data['file_content'])
-        logger.info(f'{filename} saved')
-    except Exception as e:
-        logger.error(e)
-
+def stop_media_handler():
+    logger.info('Terminating all active media')
+    subprocess.call(["pkill", "firefox"])
+    subprocess.call(["pkill", "mpv"])
 
 
-@sio.event
-def disconnect():
-    logger.info('Disconnected from server')
 
 
-while not connected:
-    try:
-        sio.connect("http://127.0.0.0:3000")
-        sio.wait()
-        connected = True
-    except Exception as ex:
-        logger.error(
-            f"Failed to establish initial connnection to server: {type(ex).__name__}"
-        )
-        time.sleep(2)
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        logger.info("Connected to broker")
+        client.subscribe("DISPLAY_URL")
+        client.subscribe("STOP_MEDIA")
+
+
+    else:
+        logger.error("Connection failed")
+
+def on_message(client, userdata, message):
+    logger.info("Message received : "  + str(message.payload) + " on " + message.topic)
+
+    if message.topic == "DISPLAY_URL":
+        display_url_handler(message)
+    
+    if message.topic == "STOP_MEDIA":
+        stop_media_handler()
+
+mqttBroker = "localhost"
+
+client = mqtt.Client(UNQIUE_ID)
+client.on_connect= on_connect    
+client.on_message= on_message  
+client.connect(mqttBroker,1883)        
+      
+
+client.loop_forever()
+
+
