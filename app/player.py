@@ -10,6 +10,9 @@ class Player:
         # media_player.fullscreen = True
         if loop:
             self.media_player.loop_playlist = True
+        else:
+            self.media_player.loop_playlist = False
+
         
         for i in playlist:
             if not i :
