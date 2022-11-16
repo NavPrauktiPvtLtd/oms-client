@@ -1,25 +1,22 @@
 import mpv
-import vlc
-import time
 
 class Player:
     def __init__(self):
         self.media_player = mpv.MPV()
 
     def play(self, playlist,loop):
-        # media_player.fullscreen = True
+        # self.media_player.fullscreen = True
         if loop:
             self.media_player.loop_playlist = True
         else:
             self.media_player.loop_playlist = False
 
-        
         for i in playlist:
             if not i :
                 continue
             self.media_player.playlist_append(i)
         self.media_player.playlist_pos = 0
-        # media_player.wait_for_playback()
+        # self.media_player.wait_for_playback()
         
         return self.media_player
     

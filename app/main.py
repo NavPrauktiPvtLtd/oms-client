@@ -34,13 +34,13 @@ def format_topic_name(x): return f'{SERIAL_NO}-{x}'
 
 PLAYER = Player()
 
-def publish_status(status):
+def publish_message(topic,message):
     try:
         host = "test.mosquitto.org"
         client = mqtt.Client(SERIAL_NO)
         client.connect(host=host)
-        client.publish('STATUS_CHANGED',str(json.dumps({"serialNo":SERIAL_NO,"status":status})))
-        logger.info(f"Published: {status}")
+        client.publish(topic,str(json.dumps(message)))
+        logger.info(f"Published: {message}")
         client.disconnect()
     except Exception as e:
         logger.error(e)
@@ -50,7 +50,9 @@ def start_app():
     try:
         host = "test.mosquitto.org"
         client = mqtt.Client(SERIAL_NO)
+        client.will_set('NODE_STATE',payload=str(json.dumps({"serialNo":SERIAL_NO,"status":'Offline'})),qos=1,retain=True)
         client.connect(host=host)
+        client.publish('NODE_STATE',str(json.dumps({"serialNo":SERIAL_NO,"status":'Idle'})),qos=1)
         client.on_connect= on_connect    
         client.on_message= on_message
         client.loop_forever()
@@ -64,22 +66,22 @@ def download_video_from_url(url,path):
     with open(path, 'wb') as f:
         f.write(r.content)
 
-def play_video(filepath,loop):
-    publish_status("Playing")
+def play_video(filepath,loop,id):
+    publish_message("NODE_STATE",{"serialNo":SERIAL_NO,"status":"Playing","playingData":{"type":"Video","mediaId":id}})
     PLAYER.play([filepath],loop)
-    publish_status("Idle")
 
 
-def play_playlist(videos,loop):
+
+def play_playlist(videos,loop,id):
     playlist = []
 
     for video in videos:
         filepath = file_path(video['name'])
         playlist.append(filepath)
 
-    publish_status("Playing")
+    publish_message("NODE_STATE",{"serialNo":SERIAL_NO,"status":"Playing","playingData":{"type":"VideoList","mediaId":id}})
     PLAYER.play(playlist,loop)
-    publish_status("Idle")
+
 
 
 
@@ -88,6 +90,7 @@ def play_video_handler(message):
     data = str(message.payload.decode("utf-8"))
     newData = json.loads(data)
 
+    id = newData['id']
     name = newData['name']
     url = newData['path']
     loop = newData['loop']
@@ -100,36 +103,33 @@ def play_video_handler(message):
 
     if os.path.exists(filepath):
         logger.info('video already exists skipping download')
-        play_video(filepath,loop)
+        play_video(filepath,loop,id)
     else:
         logger.info('downloading video')
         download_video_from_url(url,filepath)
-        play_video(filepath,loop)
+        play_video(filepath,loop,id)
 
 def play_playlist_handler(message):
     data = str(message.payload.decode("utf-8"))
     newData = json.loads(data)
 
-    videos = newData['playlist']
+    id = newData['id']
+    videos  = newData['playlist']
     loop = newData['loop']
-
 
     # TODO: validate the dict 
 
     for video in videos:
-
         filepath = file_path(video['name'])
-
         if not os.path.exists(filepath):
-            download_video_from_url(video['url'],filepath)
+            download_video_from_url(video['path'],filepath)
     
-    play_playlist(videos,loop)
+    play_playlist(videos,loop,id)
 
 
+def display_url(url,id):
+    publish_message("NODE_STATE",{"serialNo":SERIAL_NO,"status":"Playing","playingData":{"type":"Url","mediaId":id}})
  
-
-def display_url(url):
-    publish_status("Playing")
     logger.info(f'URL received: {url}')
     subprocess.call(["firefox", f"--kiosk={url}"])
 
@@ -137,7 +137,8 @@ def display_url(url):
 def close_browser(secs):
     time.sleep(secs)
     subprocess.call(["pkill", "firefox"])
-    publish_status("Idle")
+    publish_message("NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"})
+
 
 
 
@@ -147,6 +148,7 @@ def display_url_handler(message):
     newData = json.loads(data)
 
     logger.info("Message received: {newData}")
+    id = newData['id']
 
     url = newData["url"]
     seconds = newData["seconds"]
@@ -154,14 +156,14 @@ def display_url_handler(message):
     if not url:
         logger.error('URL not found')
         return
-    t1 = Thread(target=display_url, args=(url,))
+    t1 = Thread(target=display_url, args=(url,id,))
     t2 = Thread(target=close_browser, args=(seconds,))
 
     t1.start()
     t2.start()
 
 def stop_media_handler():
-    publish_status("Idle")
+    publish_message("NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"})
     logger.info('Terminating all active media')
     subprocess.call(["pkill", "firefox"])
     PLAYER.teminate()
@@ -173,7 +175,6 @@ def on_connect(client, userdata, flags, rc):
         client.subscribe(format_topic_name("STOP_MEDIA"))
         client.subscribe(format_topic_name("PLAY_VIDEO"))
         client.subscribe(format_topic_name("PLAY_PLAYLIST"))
-
     else:
         logger.error("Connection failed")
 
