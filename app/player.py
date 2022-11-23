@@ -16,9 +16,8 @@ class Player:
                 continue
             self.media_player.playlist_append(i)
         self.media_player.playlist_pos = 0
-        # self.media_player.wait_for_playback()
-        
-        return self.media_player
+        self.media_player.wait_for_playback()
+
     
     def teminate(self):
         if self.media_player:

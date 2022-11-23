@@ -9,6 +9,7 @@ from media_handlers.url_handler import URLHandler
 from media_handlers.video_handler import VideoHandler
 from media_handlers.playlist_handler import PlaylistHandler
 import os
+from threading import Thread
 from pathlib import Path
 from utils import publish_message
 
@@ -62,6 +63,7 @@ class APP:
             self.terminate_all_active_media()
             video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
             video_handler.play()
+
 
         if message.topic == format_topic_name("PLAY_PLAYLIST"):
             self.terminate_all_active_media()
