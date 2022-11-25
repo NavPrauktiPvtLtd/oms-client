@@ -9,7 +9,6 @@ from media_handlers.url_handler import URLHandler
 from media_handlers.video_handler import VideoHandler
 from media_handlers.playlist_handler import PlaylistHandler
 import os
-from threading import Thread
 from pathlib import Path
 from utils import publish_message
 
@@ -41,12 +40,16 @@ class APP:
     def on_mqtt_connect(self,client, userdata, flags, rc):
         if rc == 0:
             logger.info("Connected to broker")
+            publish_message(self.client,"NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"},qos=1)
             client.subscribe(format_topic_name("DISPLAY_URL"))
             client.subscribe(format_topic_name("STOP_MEDIA"))
             client.subscribe(format_topic_name("PLAY_VIDEO"))
             client.subscribe(format_topic_name("PLAY_PLAYLIST"))
         else:
             logger.error("Connection failed")
+    
+    def on_mqtt_disconnect(self,client, userdata, message):
+        logger.info('Disconnected from the broker')
 
     def on_mqtt_message(self,client, userdata, message):
         logger.info("Message received : "  + str(message.payload) + " on " + message.topic)
@@ -60,10 +63,9 @@ class APP:
             self.terminate_all_active_media()
 
         if message.topic == format_topic_name("PLAY_VIDEO"):
-            self.terminate_all_active_media()
+            # self.terminate_all_active_media()
             video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
             video_handler.play()
-
 
         if message.topic == format_topic_name("PLAY_PLAYLIST"):
             self.terminate_all_active_media()
@@ -74,15 +76,15 @@ class APP:
         publish_message(self.client,"NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"})
         logger.info('Terminating all active media')
         subprocess.call(["pkill", "firefox"])
-        self.player.teminate()
+        self.player.terminate()
         
     def start(self):
         try:
             self.client = mqtt.Client(SERIAL_NO)
-            self.client.will_set('NODE_STATE',payload=str(json.dumps({"serialNo":SERIAL_NO,"status":'Offline'})),qos=1,retain=True)
+            self.client.will_set('NODE_STATE',payload=str(json.dumps({"serialNo":SERIAL_NO,"status":'Offline'})),qos=2,retain=True)
             self.client.connect(host=MQTT_HOST)
-            self.client.publish('NODE_STATE',str(json.dumps({"serialNo":SERIAL_NO,"status":'Idle'})),qos=1)
             self.client.on_connect= self.on_mqtt_connect   
+            self.client.on_disconnect = self.on_mqtt_disconnect
             self.client.on_message= self.on_mqtt_message
             self.client.loop_forever()
         except Exception as e:
@@ -93,3 +95,4 @@ class APP:
 app = APP()
 
 app.start()
+

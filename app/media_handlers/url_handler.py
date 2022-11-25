@@ -6,11 +6,8 @@ import paho.mqtt.client as mqtt
 from utils import publish_message
 import time
 import subprocess
-import os
-
 
 logger = setup_applevel_logger(__name__)
-
 
 class URLData(BaseModel):
     id: str
