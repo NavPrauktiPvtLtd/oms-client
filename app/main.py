@@ -63,7 +63,7 @@ class APP:
             self.terminate_all_active_media()
 
         if message.topic == format_topic_name("PLAY_VIDEO"):
-            # self.terminate_all_active_media()
+            self.terminate_all_active_media()
             video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
             video_handler.play()
 
@@ -90,7 +90,8 @@ class APP:
         except Exception as e:
             logger.error(e)
             time.sleep(1)
-            self.start() 
+            self.start()
+
 
 app = APP()
 

@@ -29,10 +29,12 @@ class URLHandler:
 
     def play(self):
         t1 = Thread(target=self.open_browser)
-        t2 = Thread(target=self.close_browser)
-
         t1.start()
-        t2.start()
+
+        if self.context_data.seconds > 0:
+            t2 = Thread(target=self.close_browser,args=(self.context_data.seconds,))
+            t2.start()
+   
 
 
     def open_browser(self):
@@ -40,9 +42,9 @@ class URLHandler:
         logger.info(f'Opening browser with link : {self.context_data.url}')
         subprocess.call(["firefox", f"--kiosk={self.context_data.url}"])
      
-
-    def close_browser(self):
-        time.sleep(self.context_data.seconds)
+    # need fix: it will close the browser even if another url is playing
+    def close_browser(self,seconds):
+        time.sleep(seconds)
         subprocess.call(["pkill", "firefox"])
         publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Idle"})
 

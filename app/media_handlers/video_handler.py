@@ -61,4 +61,3 @@ class VideoHandler:
         publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Playing","playingData":{"type":"Video","mediaId":id}})
         t1 = Thread(target=self.player.play,args=([filepath],loop,))
         t1.start()
-        t1.join()
