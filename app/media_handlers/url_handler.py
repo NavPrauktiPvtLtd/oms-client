@@ -34,8 +34,6 @@ class URLHandler:
         if self.context_data.seconds > 0:
             t2 = Thread(target=self.close_browser,args=(self.context_data.seconds,))
             t2.start()
-   
-
 
     def open_browser(self):
         publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Playing","playingData":{"type":"Url","mediaId":self.context_data.id}})

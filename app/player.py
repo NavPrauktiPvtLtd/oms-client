@@ -1,14 +1,18 @@
 import vlc
 from threading import Thread
+import paho.mqtt.client as mqtt
+from utils import publish_message
 from logger.logger import setup_applevel_logger
 import time
 
 logger = setup_applevel_logger(__name__)
 
 class Player:
-    def __init__(self,):
+    def __init__(self,client:mqtt.Client,serialNo:str):
         self.media_player = vlc.MediaListPlayer(vlc.Instance())
         self.player = self.media_player.get_instance()
+        self.client = client
+        self.serialNo = serialNo
         _player = self.media_player.get_media_player()
         _player.set_fullscreen(True)
 
@@ -29,6 +33,7 @@ class Player:
         else:
             logger.debug('setting loop to false')
             self.media_player.set_playback_mode(vlc.PlaybackMode.default)
+
         self.media_player.play()
 
         if not loop:
@@ -47,12 +52,14 @@ class Player:
     # without this function the player get stucked after video is done playing
     # Find a better way to do this
     def play_and_exit(self):
+        time.sleep(1)
         while True:
             if self.media_player.is_playing():
                 time.sleep(1)
             else:
                 self.media_player.stop()
                 break
+        publish_message(self.client,"NODE_STATE",{"serialNo":self.serialNo,"status":"Idle"},qos=1)
         
     def terminate(self):
         try:

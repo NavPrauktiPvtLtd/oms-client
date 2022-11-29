@@ -35,7 +35,7 @@ def format_topic_name(x): return f'{SERIAL_NO}-{x}'
 class APP:
     def __init__(self):
         self.client = None 
-        self.player = Player()
+        self.player = None
     
     def on_mqtt_connect(self,client, userdata, flags, rc):
         if rc == 0:
@@ -54,44 +54,52 @@ class APP:
     def on_mqtt_message(self,client, userdata, message):
         logger.info("Message received : "  + str(message.payload) + " on " + message.topic)
 
-        if message.topic == format_topic_name("DISPLAY_URL"):
-            self.terminate_all_active_media()
-            url_handler = URLHandler(client=client,message=message,serialNo=SERIAL_NO)
-            url_handler.play()
-        
-        if message.topic == format_topic_name("STOP_MEDIA"):
-            self.terminate_all_active_media()
 
-        if message.topic == format_topic_name("PLAY_VIDEO"):
-            self.terminate_all_active_media()
-            video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
-            video_handler.play()
+    def on_media_video(self, client, userdata, message):
+        self.terminate_all_active_media()
+        video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
+        video_handler.play()
+    
+    def on_media_playlist(self, client, userdata, message):
+        self.terminate_all_active_media()
+        playlist_handler = PlaylistHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
+        playlist_handler.play()
 
-        if message.topic == format_topic_name("PLAY_PLAYLIST"):
+    def on_media_url(self, client, userdata, message):
+        self.terminate_all_active_media()
+        url_handler = URLHandler(client=client,message=message,serialNo=SERIAL_NO)
+        url_handler.play()
+
+    def on_media_terminate(self, client, userdata, message):
+        try:
             self.terminate_all_active_media()
-            playlist_handler = PlaylistHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
-            playlist_handler.play()
+        except Exception as e:
+            logger.error(e)
 
     def terminate_all_active_media(self):
-        publish_message(self.client,"NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"})
         logger.info('Terminating all active media')
         subprocess.call(["pkill", "firefox"])
         self.player.terminate()
+        publish_message(self.client,"NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"})
         
     def start(self):
         try:
             self.client = mqtt.Client(SERIAL_NO)
+            self.player = Player(self.client,SERIAL_NO)
             self.client.will_set('NODE_STATE',payload=str(json.dumps({"serialNo":SERIAL_NO,"status":'Offline'})),qos=2,retain=True)
             self.client.connect(host=MQTT_HOST)
             self.client.on_connect= self.on_mqtt_connect   
             self.client.on_disconnect = self.on_mqtt_disconnect
             self.client.on_message= self.on_mqtt_message
+            self.client.message_callback_add(format_topic_name("PLAY_VIDEO"), self.on_media_video)
+            self.client.message_callback_add(format_topic_name("DISPLAY_URL"), self.on_media_url)
+            self.client.message_callback_add(format_topic_name("PLAY_PLAYLIST"), self.on_media_playlist)
+            self.client.message_callback_add(format_topic_name("STOP_MEDIA"), self.on_media_terminate)
             self.client.loop_forever()
         except Exception as e:
             logger.error(e)
             time.sleep(1)
             self.start()
-
 
 app = APP()
 
