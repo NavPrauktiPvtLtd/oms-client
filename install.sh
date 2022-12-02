@@ -14,6 +14,7 @@ fi
 sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 
+sudo apt install firefox-esr -y
 
 dpkg -s vlc 2>/dev/null >/dev/null || sudo apt install vlc -y
 

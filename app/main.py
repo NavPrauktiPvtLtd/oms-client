@@ -86,7 +86,7 @@ class APP:
         try:
             self.client = mqtt.Client(SERIAL_NO)
             self.player = Player(self.client,SERIAL_NO)
-            self.client.will_set('NODE_STATE',payload=str(json.dumps({"serialNo":SERIAL_NO,"status":'Offline'})),qos=2,retain=True)
+            self.client.will_set('NODE_STATE',payload=str(json.dumps({"serialNo":SERIAL_NO,"status":'Offline'})),qos=2)
             self.client.connect(host=MQTT_HOST)
             self.client.on_connect= self.on_mqtt_connect   
             self.client.on_disconnect = self.on_mqtt_disconnect
