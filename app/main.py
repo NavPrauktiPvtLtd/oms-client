@@ -1,6 +1,5 @@
 import subprocess
 import paho.mqtt.client as mqtt
-import time
 import json
 from logger.logger import setup_applevel_logger
 from dotenv import load_dotenv
@@ -10,6 +9,10 @@ from media_handlers.video_handler import VideoHandler
 from media_handlers.playlist_handler import PlaylistHandler
 import os
 from pathlib import Path
+import threading
+import time
+
+import schedule
 from utils import publish_message
 
 load_dotenv()
@@ -32,6 +35,14 @@ if not SERIAL_NO:
 
 def format_topic_name(x): return f'{SERIAL_NO}-{x}'
 
+def job():
+    print('yoyoyoy')
+
+def job_that_executes_once():
+    # Do some work that only needs to happen once...
+    print('inside job')
+    subprocess.call(["pkill", "firefox"])
+    return schedule.CancelJob
 class APP:
     def __init__(self):
         self.client = None 
@@ -58,8 +69,11 @@ class APP:
     def on_media_video(self, client, userdata, message):
         self.terminate_all_active_media()
         video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
-        video_handler.play()
-    
+        # video_handler.play()
+
+        schedule.every(5).seconds.do(video_handler.play)
+
+ 
     def on_media_playlist(self, client, userdata, message):
         self.terminate_all_active_media()
         playlist_handler = PlaylistHandler(client=client,message=message,player=self.player,serialNo=SERIAL_NO,dir=VIDEOS_DIR)
@@ -68,7 +82,9 @@ class APP:
     def on_media_url(self, client, userdata, message):
         self.terminate_all_active_media()
         url_handler = URLHandler(client=client,message=message,serialNo=SERIAL_NO)
+        # schedule.every(20).seconds.do(job_that_executes_once)
         url_handler.play()
+
 
     def on_media_terminate(self, client, userdata, message):
         try:
@@ -81,7 +97,22 @@ class APP:
         subprocess.call(["pkill", "firefox"])
         self.player.terminate()
         publish_message(self.client,"NODE_STATE",{"serialNo":SERIAL_NO,"status":"Idle"})
-        
+
+    def run_pending_jobs(self,interval=1):
+        cease_continuous_run = threading.Event()
+
+        class ScheduleThread(threading.Thread):
+            @classmethod
+            def run(cls):
+                while not cease_continuous_run.is_set():
+                    schedule.run_pending()
+                    time.sleep(interval)
+
+        continuous_thread = ScheduleThread()
+        continuous_thread.start()
+        return cease_continuous_run
+
+
     def start(self):
         try:
             self.client = mqtt.Client(SERIAL_NO)
@@ -95,13 +126,18 @@ class APP:
             self.client.message_callback_add(format_topic_name("DISPLAY_URL"), self.on_media_url)
             self.client.message_callback_add(format_topic_name("PLAY_PLAYLIST"), self.on_media_playlist)
             self.client.message_callback_add(format_topic_name("STOP_MEDIA"), self.on_media_terminate)
+            self.stop_run_pending_jobs = self.run_pending_jobs()
             self.client.loop_forever()
         except Exception as e:
             logger.error(e)
             time.sleep(1)
             self.start()
 
-app = APP()
 
+
+app = APP()
 app.start()
+
+
+
 
