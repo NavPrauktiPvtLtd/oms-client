@@ -5,23 +5,19 @@ import paho.mqtt.client as mqtt
 from utils import  publish_message
 from player import Player
 import os
-from typing import List
+from typing import List, Optional
 import requests
+from media_handlers.video_handler import Video
+
 
 logger = setup_applevel_logger(__name__)
 
-class VideoData(BaseModel):
-    id: str
-    name: str 
-    path: str 
-    duration: int 
-    size: int 
 
 class PlaylistData(BaseModel):
     id: str 
     name: str 
-    playlist: List[VideoData]
-    loop: bool
+    videos: List[Video]
+    loop: Optional[bool]
 
 class PlaylistHandler:
     def __init__(self,client:mqtt.Client,message,player:Player,serialNo:str,dir:str):
@@ -41,17 +37,19 @@ class PlaylistHandler:
     def play(self):
         id = self.context_data.id
         name = self.context_data.name
-        playlist = self.context_data.playlist
-        loop = self.context_data.loop
+        videos = self.context_data.videos
+        loop = False 
+        if(self.context_data.loop):
+            loop = True
 
         filepath = self.file_path(name)
 
-        for video in playlist:
+        for video in videos:
             filepath = self.file_path(video.name)
             if not os.path.exists(filepath):
                 self.download_video_from_url(video.path,filepath)
                 
-        self.play_playlist(playlist,loop,id)
+        self.play_playlist(videos,loop,id)
 
 
     def download_video_from_url(self,url:str,path:str):
@@ -61,10 +59,10 @@ class PlaylistHandler:
             f.write(r.content)
         publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Idle"})
 
-    def play_playlist(self,playlist:List[VideoData],loop:bool,id:str):
+    def play_playlist(self,videos:List[Video],loop:bool,id:str):
         playlist_paths = []
 
-        for video in playlist:
+        for video in videos:
             filepath = self.file_path(video.name)
             playlist_paths.append(filepath)
 

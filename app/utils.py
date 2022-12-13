@@ -4,7 +4,7 @@ import paho.mqtt.client as mqtt
 
 logger = setup_applevel_logger(__name__)
 
-def publish_message(client:mqtt.Client,topic:str,message,qos=0):
+def publish_message(client:mqtt.Client|None,topic:str,message,qos=0):
     if not client:
         logger.error('Mqtt client is None')
         return

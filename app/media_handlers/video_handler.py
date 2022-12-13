@@ -10,12 +10,15 @@ import requests
 
 logger = setup_applevel_logger(__name__)
 
-class VideoData(BaseModel):
+class Video(BaseModel):
     id: str
     name: str 
     path: str 
     duration: int 
     size: int 
+
+class VideoData(BaseModel):
+    video: Video
     loop: bool
 
 class VideoHandler:
@@ -27,6 +30,7 @@ class VideoHandler:
         self.searialNo = serialNo
         dataStr = str(message.payload.decode("utf-8"))
         data = json.loads(dataStr)
+        print(data)
 
         try:
             self.context_data = VideoData(**data)
@@ -34,9 +38,9 @@ class VideoHandler:
             logger.error(e)
 
     def play(self):
-        id = self.context_data.id
-        name = self.context_data.name
-        url = self.context_data.path
+        id = self.context_data.video.id
+        name = self.context_data.video.name
+        url = self.context_data.video.path
         loop = self.context_data.loop
 
         filepath = self.file_path(name)
