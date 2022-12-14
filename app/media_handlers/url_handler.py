@@ -27,32 +27,26 @@ class URLData(BaseModel):
     duration: int
 
 class URLHandler:
-    def __init__(self,client:mqtt.Client,message,serialNo:str):
+    def __init__(self,client:mqtt.Client,data:URLData,serialNo:str):
         self.client = client
-        self.message = message
+        self.data = data
         self.searialNo = serialNo
-        dataStr = str(message.payload.decode("utf-8"))
-        data = json.loads(dataStr)
-
-        try:
-            self.context_data = URLData(**data)
-        except Exception as e:
-            logger.error(e)
 
     def play(self):
-        print(self.context_data.duration)
-        schedule.every(self.context_data.duration).seconds.do(job_that_executes_once)
+        # if the duration is less than 0 we will keep the browser running for infinite time
+        if self.data.duration > 0:
+            schedule.every(self.data.duration).seconds.do(job_that_executes_once)
         t1 = Thread(target=self.open_browser)
         t1.start()
         # schedule.idle_seconds()
 
-        # if self.context_data.seconds > 0:
-        #     t2 = Thread(target=self.close_browser,args=(self.context_data.seconds,))
+        # if self.data.seconds > 0:
+        #     t2 = Thread(target=self.close_browser,args=(self.data.seconds,))
         #     t2.start()
 
     def open_browser(self):
-        url_to_open = self.context_data.url.url
-        publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Playing","playingData":{"type":"Url","mediaId":self.context_data.url.id}})
+        url_to_open = self.data.url.url
+        publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Playing","playingData":{"type":"Url","mediaId":self.data.url.id}})
         logger.info(f'Opening browser with link : {url_to_open}')
         subprocess.call(["firefox", f"--kiosk={url_to_open}"])
      

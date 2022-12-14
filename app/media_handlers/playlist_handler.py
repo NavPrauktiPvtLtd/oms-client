@@ -20,26 +20,19 @@ class PlaylistData(BaseModel):
     loop: Optional[bool]
 
 class PlaylistHandler:
-    def __init__(self,client:mqtt.Client,message,player:Player,serialNo:str,dir:str):
+    def __init__(self,client:mqtt.Client,data:PlaylistData,player:Player,serialNo:str,dir:str):
         self.client = client
-        self.message = message
+        self.data = data
         self.player = player
         self.dir = dir 
         self.searialNo = serialNo
-        dataStr = str(message.payload.decode("utf-8"))
-        data = json.loads(dataStr)
-
-        try:
-            self.context_data = PlaylistData(**data)
-        except Exception as e:
-            logger.error(e)
 
     def play(self):
-        id = self.context_data.id
-        name = self.context_data.name
-        videos = self.context_data.videos
+        id = self.data.id
+        name = self.data.name
+        videos = self.data.videos
         loop = False 
-        if(self.context_data.loop):
+        if(self.data.loop):
             loop = True
 
         filepath = self.file_path(name)

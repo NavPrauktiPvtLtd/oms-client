@@ -4,24 +4,23 @@ import json
 from logger.logger import setup_applevel_logger
 from dotenv import load_dotenv
 from player import Player
-from media_handlers.url_handler import URLHandler
-from media_handlers.video_handler import VideoHandler
-from media_handlers.playlist_handler import PlaylistHandler
+from media_handlers.url_handler import URLHandler,URLData
+from media_handlers.video_handler import VideoHandler,VideoData
+from media_handlers.playlist_handler import PlaylistData, PlaylistHandler
 from media_handlers.schedule_handler import ScheduleHandler
 import os
-from pathlib import Path
 import threading
 import time
-
+from utils import VIDEOS_DIR
 import schedule
-from utils import publish_message
+from utils import get_data_from_message, publish_message
 
 load_dotenv()
 
 logger = setup_applevel_logger(__name__)
 
-BASE_DIR = str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
-VIDEOS_DIR = os.path.join(BASE_DIR, "videos")
+
+VIDEOS_DIR = VIDEOS_DIR
 
 if not os.path.exists(VIDEOS_DIR):
     os.makedirs(VIDEOS_DIR)
@@ -39,6 +38,9 @@ def format_topic_name(x): return f'{SERIAL_NO}-{x}'
 def job():
     print('yoyoyoy')
 
+
+ 
+
 def job_that_executes_once():
     # Do some work that only needs to happen once...
     print('inside job')
@@ -50,6 +52,8 @@ class APP:
         self.client = None 
         self.player = None
         self.serialNo = serialNo
+        self.nodeScheduler = schedule.Scheduler()
+
     
     def on_mqtt_connect(self,client, userdata, flags, rc):
         if rc == 0:
@@ -76,8 +80,13 @@ class APP:
         if not self.player:
             return
         self.terminate_all_active_media()
-        video_handler = VideoHandler(client=client,message=message,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
-        video_handler.play()
+        msgData = get_data_from_message(message)
+        if msgData:
+            data = VideoData(**msgData)
+            video_handler = VideoHandler(client=client,data=data,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
+            video_handler.play()
+        else:
+            logger.error('No msg data')
         # schedule.every(5).seconds.do(video_handler.play)
         # schedule.every().day.at("14:46").do(video_handler.play)
         # schedule.every().day.at("14:47").do(self.player.terminate)
@@ -86,14 +95,23 @@ class APP:
         if not self.player:
             return
         self.terminate_all_active_media()
-        playlist_handler = PlaylistHandler(client=client,message=message,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
-        playlist_handler.play()
+        msgData = get_data_from_message(message)
+        if msgData:
+            data = PlaylistData(**msgData)
+            playlist_handler = PlaylistHandler(client=client,data=data,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
+            playlist_handler.play()
+        else:
+            logger.error('No msg data')
 
     def on_media_url(self, client, userdata, message):
         self.terminate_all_active_media()
-        url_handler = URLHandler(client=client,message=message,serialNo=self.serialNo)
-        # schedule.every(20).seconds.do(job_that_executes_once)
-        url_handler.play()
+        msgData = get_data_from_message(message)
+        if msgData:
+            data = URLData(**msgData)
+            url_handler = URLHandler(client=client,data=data,serialNo=self.serialNo)
+            url_handler.play()
+        else:
+            logger.error('No msg data')
 
 
     def on_media_terminate(self, client, userdata, message):
@@ -111,8 +129,10 @@ class APP:
         publish_message(self.client,"NODE_STATE",{"serialNo":self.serialNo,"status":"Idle"})
 
     def on_set_schedule(self, client, userdata, message):
-        schedule_handler = ScheduleHandler(client=client,message=message,serialNo=self.serialNo)
-
+        if not self.player:
+            return
+        schedule_handler = ScheduleHandler(client=client,message=message,serialNo=self.serialNo,node_schedular=self.nodeScheduler,player=self.player)
+        schedule_handler.start()
     def run_pending_jobs(self,interval=1):
         cease_continuous_run = threading.Event()
 
@@ -120,7 +140,7 @@ class APP:
             @classmethod
             def run(cls):
                 while not cease_continuous_run.is_set():
-                    schedule.run_pending()
+                    self.nodeScheduler.run_pending()
                     time.sleep(interval)
 
         continuous_thread = ScheduleThread()

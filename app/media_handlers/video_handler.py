@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-import json
 from logger.logger import setup_applevel_logger
 import paho.mqtt.client as mqtt
 from utils import publish_message
@@ -22,26 +21,19 @@ class VideoData(BaseModel):
     loop: bool
 
 class VideoHandler:
-    def __init__(self,client:mqtt.Client,message,player:Player,serialNo:str,dir:str):
+    def __init__(self,client:mqtt.Client,data:VideoData,player:Player,serialNo:str,dir:str):
         self.client = client
-        self.message = message
         self.player = player
         self.dir = dir 
         self.searialNo = serialNo
-        dataStr = str(message.payload.decode("utf-8"))
-        data = json.loads(dataStr)
-        print(data)
+        self.data = data
 
-        try:
-            self.context_data = VideoData(**data)
-        except Exception as e:
-            logger.error(e)
 
     def play(self):
-        id = self.context_data.video.id
-        name = self.context_data.video.name
-        url = self.context_data.video.path
-        loop = self.context_data.loop
+        id = self.data.video.id
+        name = self.data.video.name
+        url = self.data.video.path
+        loop = self.data.loop
 
         filepath = self.file_path(name)
 
