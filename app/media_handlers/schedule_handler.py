@@ -50,6 +50,9 @@ class ScheduleHandler:
         except Exception as e:
             logger.error(e)
 
+    def __del__(self):
+        logger.debug('Destructor called, ScheduleHandler deleted.')
+
     def schedule_video(self,start_time:str,end_time:str,video:Video,loop:bool|None):
         logger.debug(f'Schedule created: start-time - {start_time} and end-time - {end_time} | media-type: video | media = {video.name}')
         if not loop:

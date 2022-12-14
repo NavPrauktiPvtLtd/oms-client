@@ -27,6 +27,9 @@ class PlaylistHandler:
         self.dir = dir 
         self.searialNo = serialNo
 
+    def __del__(self):
+        logger.debug('Destructor called, PlaylistHandler deleted.')
+
     def play(self):
         id = self.data.id
         name = self.data.name

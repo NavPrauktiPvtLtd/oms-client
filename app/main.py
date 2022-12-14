@@ -87,9 +87,6 @@ class APP:
             video_handler.play()
         else:
             logger.error('No msg data')
-        # schedule.every(5).seconds.do(video_handler.play)
-        # schedule.every().day.at("14:46").do(video_handler.play)
-        # schedule.every().day.at("14:47").do(self.player.terminate)
  
     def on_media_playlist(self, client, userdata, message):
         if not self.player:
@@ -121,7 +118,6 @@ class APP:
             logger.error(e)
 
     def terminate_all_active_media(self):
-        
         logger.info('Terminating all active media')
         subprocess.call(["pkill", "firefox"])
         if self.player:

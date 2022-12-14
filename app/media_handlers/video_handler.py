@@ -28,6 +28,8 @@ class VideoHandler:
         self.searialNo = serialNo
         self.data = data
 
+    def __del__(self):
+        logger.debug('Destructor called, VideoHandler deleted.')
 
     def play(self):
         id = self.data.video.id

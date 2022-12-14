@@ -32,6 +32,9 @@ class URLHandler:
         self.data = data
         self.searialNo = serialNo
 
+    def __del__(self):
+        logger.debug('Destructor called, URLHandler deleted.')
+
     def play(self):
         # if the duration is less than 0 we will keep the browser running for infinite time
         if self.data.duration > 0:
