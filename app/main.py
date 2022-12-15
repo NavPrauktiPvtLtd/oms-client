@@ -1,19 +1,19 @@
-import subprocess
-import paho.mqtt.client as mqtt
+import os
+import time
 import json
-from logger.logger import setup_applevel_logger
-from dotenv import load_dotenv
+import schedule
+import threading
+import subprocess
 from player import Player
+from utils import VIDEOS_DIR
+from dotenv import load_dotenv
+import paho.mqtt.client as mqtt
+from logger.logger import setup_applevel_logger
+from utils import get_data_from_message, publish_message
 from media_handlers.url_handler import URLHandler,URLData
 from media_handlers.video_handler import VideoHandler,VideoData
 from media_handlers.playlist_handler import PlaylistData, PlaylistHandler
-from media_handlers.schedule_handler import ScheduleHandler
-import os
-import threading
-import time
-from utils import VIDEOS_DIR
-import schedule
-from utils import get_data_from_message, publish_message
+from media_handlers.schedule_handler import ScheduleHandler,ScheduleData
 
 load_dotenv()
 
@@ -53,6 +53,7 @@ class APP:
         self.player = None
         self.serialNo = serialNo
         self.nodeScheduler = schedule.Scheduler()
+        self.scheduleId = None
 
     
     def on_mqtt_connect(self,client, userdata, flags, rc):
@@ -86,7 +87,7 @@ class APP:
             video_handler = VideoHandler(client=client,data=data,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
             video_handler.play()
         else:
-            logger.error('No msg data')
+            logger.error('No msg data in set_video message')
  
     def on_media_playlist(self, client, userdata, message):
         if not self.player:
@@ -98,7 +99,7 @@ class APP:
             playlist_handler = PlaylistHandler(client=client,data=data,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
             playlist_handler.play()
         else:
-            logger.error('No msg data')
+            logger.error('No msg data in set_playlist message')
 
     def on_media_url(self, client, userdata, message):
         self.terminate_all_active_media()
@@ -108,7 +109,7 @@ class APP:
             url_handler = URLHandler(client=client,data=data,serialNo=self.serialNo)
             url_handler.play()
         else:
-            logger.error('No msg data')
+            logger.error('No msg data in set_url message')
 
 
     def on_media_terminate(self, client, userdata, message):
@@ -127,8 +128,25 @@ class APP:
     def on_set_schedule(self, client, userdata, message):
         if not self.player:
             return
-        schedule_handler = ScheduleHandler(client=client,message=message,serialNo=self.serialNo,node_schedular=self.nodeScheduler,player=self.player)
-        schedule_handler.start()
+        logger.info(msg='new schedule received')
+        # IMP: it might cause problem with browser close schedules
+        self.nodeScheduler.clear()
+        logger.info(msg='cleared previous schedule')
+        msgData = get_data_from_message(message)
+        if msgData:
+            data = ScheduleData(**msgData)
+
+            # check if we are updating the current schedule 
+            if self.scheduleId != data.id:
+                self.terminate_all_active_media()
+
+            schedule_handler = ScheduleHandler(client=client,data=data,serialNo=self.serialNo,node_schedular=self.nodeScheduler,player=self.player)
+            schedule_handler.start()
+        else:
+            logger.error('No msg data in set_schedule msg')
+
+
+
     def run_pending_jobs(self,interval=1):
         cease_continuous_run = threading.Event()
 

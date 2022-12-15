@@ -11,11 +11,7 @@ from logger.logger import setup_applevel_logger
 from media_handlers.playlist_handler import PlaylistData, PlaylistHandler 
 from player import Player
 
-
-
-
 logger = setup_applevel_logger(__name__)
-
 
 class ScheduleItemData(BaseModel):
     start_time: str
@@ -35,20 +31,13 @@ class ScheduleData(BaseModel):
     nodeId: str 
     ScheduleItem: List[ScheduleItemData]
     
-
 class ScheduleHandler:
-    def __init__(self,client:mqtt.Client,message,serialNo:str,node_schedular:schedule.Scheduler,player:Player):
+    def __init__(self,client:mqtt.Client,data:ScheduleData,serialNo:str,node_schedular:schedule.Scheduler,player:Player):
         self.client = client 
-        self.message = message 
         self.serialNo = serialNo
         self.player = player
         self.node_schedular = node_schedular
-        dataStr = str(message.payload.decode("utf-8"))
-        data = json.loads(dataStr)
-        try:
-            self.context_data = ScheduleData(**data)
-        except Exception as e:
-            logger.error(e)
+        self.data = data
 
     def __del__(self):
         logger.debug('Destructor called, ScheduleHandler deleted.')
@@ -78,7 +67,8 @@ class ScheduleHandler:
         self.node_schedular.every().day.at(start_time).do(playlist_handler.play)
 
     def start(self):
-        for schedule_item in self.context_data.ScheduleItem:
+        logger.info(msg=f'Setting new schedule : {self.data.name}')
+        for schedule_item in self.data.ScheduleItem:
             start_time = schedule_item.start_time
             end_time = schedule_item.end_time
             if schedule_item.video:

@@ -8,7 +8,6 @@ import time
 import subprocess
 import schedule
 
-
 logger = setup_applevel_logger(__name__)
 
 def job_that_executes_once():

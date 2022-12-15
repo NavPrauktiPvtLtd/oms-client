@@ -9,9 +9,7 @@ from typing import List, Optional
 import requests
 from media_handlers.video_handler import Video
 
-
 logger = setup_applevel_logger(__name__)
-
 
 class PlaylistData(BaseModel):
     id: str 
