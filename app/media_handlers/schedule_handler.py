@@ -4,7 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel
 import paho.mqtt.client as mqtt
 from typing import List, Optional
-from utils import VIDEOS_DIR
+from utils import VIDEOS_DIR, publish_message
 from media_handlers.url_handler import URL,URLData,URLHandler
 from media_handlers.video_handler import Video, VideoHandler,VideoData
 from logger.logger import setup_applevel_logger
@@ -14,6 +14,7 @@ from player import Player
 logger = setup_applevel_logger(__name__)
 
 class ScheduleItemData(BaseModel):
+    id: str
     start_time: str
     end_time: str 
     loop: Optional[bool]   
@@ -65,6 +66,16 @@ class ScheduleHandler:
   
         playlist_handler = PlaylistHandler(client=self.client,data=playlist_data,player=self.player,serialNo=self.serialNo,dir=VIDEOS_DIR)
         self.node_schedular.every().day.at(start_time).do(playlist_handler.play)
+
+    def send_update_schedule_message(self,id:str,is_active:bool):
+        scheduleId = self.data.id
+        data = {
+            'serialNo':self.serialNo,
+            'scheduleId':scheduleId,
+            'scheduleItemId':id,
+            'is_active':is_active
+        }
+        publish_message(self.client,"UPDATE_ACTIVE_SCHEDULE_ITEM",data)
 
     def start(self):
         logger.info(msg=f'Setting new schedule : {self.data.name}')

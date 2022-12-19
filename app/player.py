@@ -10,13 +10,18 @@ logger = setup_applevel_logger(__name__)
 class Player:
     def __init__(self,client:mqtt.Client,serialNo:str):
         self.media_player = vlc.MediaListPlayer(vlc.Instance())
-        self.player = self.media_player.get_instance()
-        self.client = client
-        self.serialNo = serialNo
-        _player = self.media_player.get_media_player()
-        _player.set_fullscreen(True)
+        if self.media_player:
+            self.player = self.media_player.get_instance()
+            self.client = client
+            self.serialNo = serialNo
+            _player = self.media_player.get_media_player()
+            _player.set_fullscreen(True)
+        else:
+            logger.error('Media player is None')
 
     def play(self,playlist:list,loop:bool):
+        if not self.media_player:
+            return
         self.terminate()
         media_list = self.player.media_list_new()
 
@@ -52,6 +57,8 @@ class Player:
     # without this function the player get stucked after video is done playing
     # Find a better way to do this
     def play_and_exit(self):
+        if not self.media_player:
+            return
         time.sleep(1)
         while True:
             if self.media_player.is_playing():
@@ -62,6 +69,8 @@ class Player:
         publish_message(self.client,"NODE_STATE",{"serialNo":self.serialNo,"status":"Idle"},qos=1)
         
     def terminate(self):
+        if not self.media_player:
+            return
         try:
             self.media_player.stop()
         except Exception as e:
