@@ -9,22 +9,25 @@ import requests
 
 logger = setup_applevel_logger(__name__)
 
+
 class Video(BaseModel):
     id: str
-    name: str 
-    path: str 
-    duration: int 
-    size: int 
+    name: str
+    path: str
+    duration: int
+    size: int
+
 
 class VideoData(BaseModel):
     video: Video
     loop: bool
 
+
 class VideoHandler:
-    def __init__(self,client:mqtt.Client,data:VideoData,player:Player,serialNo:str,dir:str):
+    def __init__(self, client: mqtt.Client, data: VideoData, player: Player, serialNo: str, dir: str):
         self.client = client
         self.player = player
-        self.dir = dir 
+        self.dir = dir
         self.searialNo = serialNo
         self.data = data
 
@@ -39,23 +42,29 @@ class VideoHandler:
 
         filepath = self.file_path(name)
 
+        self.data.video.path = filepath
+
         if os.path.exists(filepath):
             logger.info('video already exists skipping download')
-            self.play_video(filepath,loop,id)
+            self.play_video()
         else:
             logger.info('downloading video')
-            self.download_video_from_url(url,filepath)
-            self.play_video(filepath,loop,id)
+            self.download_video_from_url(url, filepath)
+            self.play_video()
 
-    def file_path(self,x): return os.path.join(self.dir, x)
+    def file_path(self, x): return os.path.join(self.dir, x)
 
-    def download_video_from_url(self,url,path):
-        publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Processing"})
+    def download_video_from_url(self, url, path):
+        publish_message(self.client, "NODE_STATE", {
+                        "serialNo": self.searialNo, "status": "Processing"})
         r = requests.get(url)
         with open(path, 'wb') as f:
             f.write(r.content)
 
-    def play_video(self,filepath,loop,id):
-        publish_message(self.client,"NODE_STATE",{"serialNo":self.searialNo,"status":"Playing","playingData":{"type":"Video","mediaId":id}})
-        t1 = Thread(target=self.player.play,args=([filepath],loop,))
+    def play_video(self):
+        publish_message(self.client, "NODE_STATE", {"serialNo": self.searialNo, "status": "Playing", "playingData": {
+                        "type": "Video", "mediaId": self.data.video.id}})
+        logger.debug(self.data.video)
+        t1 = Thread(target=self.player.play, args=(
+            [self.data.video], self.data.loop,))
         t1.start()
