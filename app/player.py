@@ -76,15 +76,7 @@ class Player:
         else:
             logger.debug('setting loop to false')
             self.media_player.set_playback_mode(vlc.PlaybackMode.default)
-        # self.send_video_started_message(str(uuid.uuid4()), playlist[0].id)
         self.media_player.play()
-
-        # videoData = {
-        #     'serialNo':self.serialNo,
-        #     'videoId':id
-        # }
-
-        # print(f'playing: {videoData}')
 
         if not loop:
             t1 = Thread(target=self.play_and_exit)
@@ -115,26 +107,28 @@ class Player:
     def on_player_stopped(self, event):
         publish_message(self.client, "NODE_STATE", {
                         "serialNo": self.serialNo, "status": "Idle"}, qos=1)
+        current_video = self.get_current_video()
+        current_playbackID = self.playbackID
+        print(current_video)
+        print(current_playbackID)
+        if current_video and current_playbackID:
+            self.send_video_ended_message(
+                current_playbackID, current_video.id)
+
         self.reset_player_conf()
         logger.debug(f'Video Player Stopped')
 
     def on_player_played(self, event):
-
-        # current_video = self.get_current_video()
-        # previous_video = self.get_previous_video()
-
-        # logger.debug(f'Video Ended (current): {current_video}')
-        # logger.debug(f'Video Ended (previous): {previous_video}')
-        # logger.debug(f'Video Started')
         pass
 
     def on_player_next(self, event):
         previous_playbackID = self.playbackID
         current_playbackID = uuid.uuid4()
+        self.playbackID = current_playbackID
         if self.playlist_index == None:
             self.playlist_index = 0
         else:
-            if self.playlist_index < self.total_videos:
+            if self.playlist_index < self.total_videos - 1:
                 self.playlist_index = self.playlist_index + 1
             else:
                 self.playlist_index = 0
@@ -142,10 +136,12 @@ class Player:
         current_video = self.get_current_video()
         previous_video = self.get_previous_video()
 
-        logger.debug(f'Video Next (current): {current_video}')
-        logger.debug(f'Video Next (previous): {previous_video}')
-
+        if current_video:
+            logger.debug(f'Video Next (current): {current_video.name}')
         if previous_video:
+            logger.debug(f'Video Next (previous): {previous_video.name}')
+
+        if previous_video and previous_playbackID:
             self.send_video_ended_message(
                 previous_playbackID, previous_video.id)
         if current_video:
@@ -170,10 +166,15 @@ class Player:
         return self.playlist[self.playlist_index - 1]
 
     def reset_player_conf(self):
+        logger.debug('Resetting player config')
+        # release the media list here
+        if self.media_list:
+            self.media_list.release()
         self.playlist = []
         self.playlist_index = None
         self.total_videos = 0
         self.loop = False
+        self.playbackID = None
 
     def send_video_started_message(self, playbackID, videoID):
         start_time = datetime.datetime.now()
