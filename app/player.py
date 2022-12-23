@@ -168,8 +168,11 @@ class Player:
     def reset_player_conf(self):
         logger.debug('Resetting player config')
         # release the media list here
-        if self.media_list:
-            self.media_list.release()
+        # if self.media_list:
+        #     self.media_list.release()
+        for i in range(0, self.total_videos):
+            self.media_list.remove_index(i)
+
         self.playlist = []
         self.playlist_index = None
         self.total_videos = 0
