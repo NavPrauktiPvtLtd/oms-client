@@ -21,7 +21,7 @@ class Video(BaseModel):
 logger = setup_applevel_logger(__name__)
 
 
-class Player:
+class PlaylistPlayer:
     def __init__(self, client: mqtt.Client, serialNo: str):
         self.media_player = vlc.MediaListPlayer(vlc.Instance())
         if self.media_player:
@@ -35,7 +35,9 @@ class Player:
             self.playlist_index = None
             self.total_videos = 0
             self.loop = False
-            self.playbackID = None
+            self.playlistPlaybackID = None
+            self.playlistID = None
+            self.videoPlaybackID = {}
             event_manager = self.media_player.event_manager()
             event_manager.event_attach(
                 vlc.EventType.MediaListPlayerPlayed, self.on_player_played)
@@ -46,7 +48,7 @@ class Player:
         else:
             logger.error('Media player is None')
 
-    def play(self, playlist: List[Video], loop: bool):
+    def play(self, id: str, playlist: List[Video], loop: bool):
         self.reset_player_conf()
         if not self.media_player:
             return
@@ -56,8 +58,16 @@ class Player:
             return
 
         self.terminate()
+
+        self.playlistID = id
+
         self.playlist = playlist
+
+        self.assign_video_playback_id()
+
         self.loop = loop
+
+        self.playlistPlaybackID = str(uuid.uuid4())
 
         for video in playlist:
             logger.debug(video)
@@ -78,12 +88,18 @@ class Player:
             self.media_player.set_playback_mode(vlc.PlaybackMode.default)
         self.media_player.play()
 
+    # without this function the player get stucked after video is done playing
+    # Find a better way to do this
         if not loop:
             t1 = Thread(target=self.play_and_exit)
             t1.start()
 
-    # without this function the player get stucked after video is done playing
-    # Find a better way to do this
+    def assign_video_playback_id(self):
+        for video in self.playlist:
+            self.videoPlaybackID[video.id] = uuid.uuid4()
+
+    def get_video_playback_id(self, video_id):
+        return str(self.videoPlaybackID[video_id])
 
     def play_and_exit(self):
         if not self.media_player:
@@ -107,13 +123,13 @@ class Player:
     def on_player_stopped(self, event):
         publish_message(self.client, "NODE_STATE", {
                         "serialNo": self.serialNo, "status": "Idle"}, qos=1)
+
         current_video = self.get_current_video()
-        current_playbackID = self.playbackID
-        print(current_video)
-        print(current_playbackID)
-        if current_video and current_playbackID:
-            self.send_video_ended_message(
-                current_playbackID, current_video.id)
+
+        if current_video:
+            logger.debug('sending video played message')
+            self.send_playlist_video_played_message(
+                current_video.id)
 
         self.reset_player_conf()
         logger.debug(f'Video Player Stopped')
@@ -122,31 +138,26 @@ class Player:
         pass
 
     def on_player_next(self, event):
-
-        if not self.playbackID:
-            self.playbackID = uuid.uuid4()
+        first_run = False
         if self.playlist_index == None:
             self.playlist_index = 0
+            self.send_playlist_started_message()
+            first_run = True
         else:
             if self.playlist_index < self.total_videos - 1:
                 self.playlist_index = self.playlist_index + 1
             else:
                 self.playlist_index = 0
         logger.debug(f'current index: {self.playlist_index}')
-        current_video = self.get_current_video()
+
         previous_video = self.get_previous_video()
 
-        if current_video:
-            logger.debug(f'Video Next (current): {current_video.name}')
         if previous_video:
-            logger.debug(f'Video Next (previous): {previous_video.name}')
+            self.send_playlist_video_played_message(
+                previous_video.id)
 
-        if previous_video and self.playbackID:
-            self.send_video_ended_message(
-                self.playbackID, previous_video.id)
-        if current_video:
-            self.send_video_started_message(
-                self.playbackID, current_video.id)
+        if not first_run and self.playlist_index == 0 and self.loop == True:
+            self.send_playlist_ended_message()
 
     def get_current_video(self) -> None | Video:
         if len(self.playlist) == 0 or self.playlist_index == None:
@@ -165,6 +176,8 @@ class Player:
 
         return self.playlist[self.playlist_index - 1]
 
+    # def playlist_loop_c
+
     def reset_player_conf(self):
         logger.debug('Resetting player config')
         # release the media list here
@@ -177,28 +190,42 @@ class Player:
         self.playlist_index = None
         self.total_videos = 0
         self.loop = False
-        self.playbackID = None
+        self.playlistPlaybackID = None
+        self.videoPlaybackID = {}
 
-    def send_video_started_message(self, playbackID, videoID):
+    def send_playlist_started_message(self):
         start_time = datetime.datetime.now()
         serialNo = self.serialNo
         data = {
             'start_time': str(start_time),
             'serialNo': serialNo,
-            'videoPlaybackId': str(playbackID),
-            'videoId': videoID
+            'playlistPlaybackId': self.playlistPlaybackID,
+            'videoListId': self.playlistID
         }
 
-        publish_message(self.client, "VIDEO_PLAYBACK", data, qos=1)
+        publish_message(self.client, "PLAYLIST_PLAYBACK", data, qos=1)
 
-    def send_video_ended_message(self, playbackID, videoID):
+    def send_playlist_ended_message(self):
         end_time = datetime.datetime.now()
         serialNo = self.serialNo
         data = {
             'end_time': str(end_time),
             'serialNo': serialNo,
-            'videoPlaybackId': str(playbackID),
-            'videoId': videoID
+            'playlistPlaybackId': self.playlistPlaybackID,
+            'videoListId': self.playlistID
         }
 
-        publish_message(self.client, "VIDEO_PLAYBACK", data, qos=1)
+        publish_message(self.client, "PLAYLIST_PLAYBACK", data, qos=1)
+
+    def send_playlist_video_played_message(self, video_id: str):
+        end_time = datetime.datetime.now()
+        serialNo = self.serialNo
+        data = {
+            'serialNo': serialNo,
+            'videoId': video_id,
+            'playlistPlaybackId': self.playlistPlaybackID,
+            'playlistPlaybackVideoId': self.get_video_playback_id(video_id),
+            'end_time': end_time
+        }
+
+        publish_message(self.client, "PLAYLIST_PLAYBACK_VIDEO", data, qos=1)

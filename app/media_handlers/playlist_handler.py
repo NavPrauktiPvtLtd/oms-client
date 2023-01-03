@@ -3,7 +3,7 @@ import json
 from logger.logger import setup_applevel_logger
 import paho.mqtt.client as mqtt
 from utils import publish_message
-from player import Player
+from playlist_player import PlaylistPlayer
 import os
 from typing import List, Optional
 import requests
@@ -20,7 +20,7 @@ class PlaylistData(BaseModel):
 
 
 class PlaylistHandler:
-    def __init__(self, client: mqtt.Client, data: PlaylistData, player: Player, serialNo: str, dir: str):
+    def __init__(self, client: mqtt.Client, data: PlaylistData, player: PlaylistPlayer, serialNo: str, dir: str):
         self.client = client
         self.data = data
         self.player = player
@@ -65,6 +65,6 @@ class PlaylistHandler:
 
         publish_message(self.client, "NODE_STATE", {
                         "serialNo": self.searialNo, "status": "Playing", "playingData": {"type": "VideoList", "mediaId": id}})
-        self.player.play(playlist_paths, loop)
+        self.player.play(id, playlist_paths, loop)
 
     def file_path(self, x): return os.path.join(self.dir, x)
