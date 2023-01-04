@@ -152,7 +152,8 @@ class PlaylistPlayer:
 
         previous_video = self.get_previous_video()
 
-        if previous_video:
+        if previous_video and first_run == False:
+            logger.debug(previous_video)
             self.send_playlist_video_played_message(
                 previous_video.id)
 
@@ -225,7 +226,6 @@ class PlaylistPlayer:
             'videoId': video_id,
             'playlistPlaybackId': self.playlistPlaybackID,
             'playlistPlaybackVideoId': self.get_video_playback_id(video_id),
-            'end_time': end_time
+            'end_time': str(end_time)
         }
-
         publish_message(self.client, "PLAYLIST_PLAYBACK_VIDEO", data, qos=1)
