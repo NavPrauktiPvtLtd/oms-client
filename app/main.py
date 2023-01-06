@@ -135,7 +135,7 @@ class APP:
                         "serialNo": self.serialNo, "status": "Idle"})
 
     def on_set_schedule(self, client, userdata, message):
-        if not self.player:
+        if not self.player or not self.playlist_player:
             return
         logger.info(msg='new schedule received')
         # IMP: it might cause problem with browser close schedules
@@ -150,7 +150,7 @@ class APP:
                 self.terminate_all_active_media()
 
             schedule_handler = ScheduleHandler(
-                client=client, data=data, serialNo=self.serialNo, node_schedular=self.nodeScheduler, player=self.player)
+                client=client, data=data, serialNo=self.serialNo, node_schedular=self.nodeScheduler, player=self.player, playlist_player=self.playlist_player)
             schedule_handler.start()
         else:
             logger.error('No msg data in set_schedule msg')
