@@ -160,12 +160,12 @@ class PlaylistPlayer:
         if not first_run and self.playlist_index == 0 and self.loop == True:
             self.send_playlist_ended_message()
 
-    def get_current_video(self) -> None | Video:
+    def get_current_video(self) -> Video:
         if len(self.playlist) == 0 or self.playlist_index == None:
             return None
         return self.playlist[self.playlist_index]
 
-    def get_previous_video(self) -> None | Video:
+    def get_previous_video(self) -> Video:
         if self.total_videos == 0 or self.playlist_index == None:
             return None
 
