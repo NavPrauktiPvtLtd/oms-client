@@ -59,6 +59,14 @@ class ScheduleHandler:
                                      player=self.player, serialNo=self.serialNo, dir=VIDEOS_DIR)
 
         self.node_schedular.every().day.at(start_time).do(video_handler.play)
+        self.node_schedular.every().day.at(end_time).do(self.player.terminate)
+
+    def handle_url_play(self, url_handler: URLHandler):
+        if self.player:
+            self.player.terminate()
+        if self.playlist_player:
+            self.playlist_player.terminate()
+        url_handler.play()
 
     def schedule_url(self, start_time: str, end_time: str, url: URL):
         logger.debug(
@@ -67,7 +75,9 @@ class ScheduleHandler:
         url_handler = URLHandler(
             client=self.client, data=url_data, serialNo=self.serialNo)
 
-        self.node_schedular.every().day.at(start_time).do(url_handler.play)
+        self.node_schedular.every().day.at(start_time).do(
+            self.handle_url_play, url_handler)
+        self.node_schedular.every().day.at(end_time).do(url_handler.close_browser, 0)
 
     def schedule_playlist(self, start_time: str, end_time: str, playlist_data: PlaylistData, loop: bool | None):
         logger.debug(

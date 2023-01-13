@@ -139,10 +139,10 @@ class APP:
             return
         logger.info(msg='new schedule received')
         # IMP: it might cause problem with browser close schedules
-        self.nodeScheduler.clear()
         logger.info(msg='cleared previous schedule')
         msgData = get_data_from_message(message)
         if msgData:
+            self.nodeScheduler.clear()
             data = ScheduleData(**msgData)
 
             # check if we are updating the current schedule

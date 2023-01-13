@@ -23,7 +23,7 @@ logger = setup_applevel_logger(__name__)
 
 class PlaylistPlayer:
     def __init__(self, client: mqtt.Client, serialNo: str):
-        self.media_player = vlc.MediaListPlayer(vlc.Instance())
+        self.media_player = vlc.MediaListPlayer(vlc.Instance("--no-xlib"))
         if self.media_player:
             self.player = self.media_player.get_instance()
             self.client = client
@@ -160,12 +160,12 @@ class PlaylistPlayer:
         if not first_run and self.playlist_index == 0 and self.loop == True:
             self.send_playlist_ended_message()
 
-    def get_current_video(self) -> Video:
+    def get_current_video(self):
         if len(self.playlist) == 0 or self.playlist_index == None:
             return None
         return self.playlist[self.playlist_index]
 
-    def get_previous_video(self) -> Video:
+    def get_previous_video(self):
         if self.total_videos == 0 or self.playlist_index == None:
             return None
 

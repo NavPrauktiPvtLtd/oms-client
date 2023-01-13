@@ -23,7 +23,7 @@ logger = setup_applevel_logger(__name__)
 
 class Player:
     def __init__(self, client: mqtt.Client, serialNo: str):
-        self.media_player = vlc.MediaListPlayer(vlc.Instance())
+        self.media_player = vlc.MediaListPlayer(vlc.Instance("--no-xlib"))
         if self.media_player:
             self.player = self.media_player.get_instance()
             self.client = client
