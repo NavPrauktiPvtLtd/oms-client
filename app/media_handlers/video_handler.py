@@ -1,11 +1,12 @@
 from pydantic import BaseModel
 from logger.logger import setup_applevel_logger
 import paho.mqtt.client as mqtt
-from utils import publish_message
+from utils import publish_message, VIDEOS_PLAYBACK_HISTORY_PATH, MAX_VIDEO_STORAGE_SIZE
 from player import Player
 from threading import Thread
 import os
 import requests
+from .video_memory_manager import VideoMemoryManager
 
 logger = setup_applevel_logger(__name__)
 
@@ -38,17 +39,27 @@ class VideoHandler:
         id = self.data.video.id
         name = self.data.video.name
         url = self.data.video.path
+        size = self.data.video.size
         loop = self.data.loop
 
         filepath = self.file_path(name)
 
         self.data.video.path = filepath
 
+        memory_manager = VideoMemoryManager(
+            VIDEOS_PLAYBACK_HISTORY_PATH, MAX_VIDEO_STORAGE_SIZE)
+
+        # check if there is
+
         if os.path.exists(filepath):
             logger.info('video already exists skipping download')
+            memory_manager.update_last_played(name)
             self.play_video()
         else:
             logger.info('downloading video')
+            if not memory_manager.is_enough_space(size):
+                memory_manager.make_space(size)
+            memory_manager.insert_new_video(name, size)
             self.download_video_from_url(url, filepath)
             self.play_video()
 

@@ -6,7 +6,7 @@ import threading
 import subprocess
 from player import Player
 from playlist_player import PlaylistPlayer
-from utils import VIDEOS_DIR
+from utils import VIDEOS_DIR, VIDEOS_PLAYBACK_HISTORY_PATH, check_and_create_file
 from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 from logger.logger import setup_applevel_logger
@@ -23,8 +23,13 @@ logger = setup_applevel_logger(__name__)
 
 VIDEOS_DIR = VIDEOS_DIR
 
+
+check_and_create_file(
+    file_path=VIDEOS_PLAYBACK_HISTORY_PATH, initial_content='{}')
+
 if not os.path.exists(VIDEOS_DIR):
     os.makedirs(VIDEOS_DIR)
+
 
 SERIAL_NO = os.getenv('SERIAL_NO')
 
