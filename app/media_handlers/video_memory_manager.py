@@ -61,7 +61,7 @@ class VideoMemoryManager:
     def delete_video(self, name):
         try:
             video_path = self.file_path(name)
-            logger.debug(f"deleted video with path: {video_path}")
+            logger.debug(f"delete video with path: {video_path}")
             if os.path.exists(video_path):
                 os.remove(video_path)
             write_json_file(self.playback_history_path, self.videos)

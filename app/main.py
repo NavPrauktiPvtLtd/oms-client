@@ -129,6 +129,12 @@ class APP:
         except Exception as e:
             logger.error(e)
 
+    def request_default_video(self):
+        pass
+
+    def on_default_video_received(self):
+        pass
+
     def terminate_all_active_media(self):
         logger.info('Terminating all active media')
         subprocess.call(["pkill", "firefox"])

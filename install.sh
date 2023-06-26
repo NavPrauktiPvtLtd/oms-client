@@ -51,7 +51,7 @@ stderr_logfile=/var/log/oms.err.log
 stdout_logfile=/var/log/oms.out.log
 EOF
 
-cp oms-client.conf /etc/supervisor/conf.d/
+cp -f oms-client.conf /etc/supervisor/conf.d/
 
 service supervisor restart
 
