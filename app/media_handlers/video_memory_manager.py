@@ -1,4 +1,4 @@
-from utils import read_json_file, write_json_file
+from utils import read_json_file, write_json_file, VIDEOS_DIR
 import time
 import os
 from logger.logger import setup_applevel_logger
@@ -25,6 +25,9 @@ class VideoMemoryManager:
                 "size": size,
                 "last_played": time.time()
             }
+
+            logger.debug(f"new video inserted: {name} - {size}")
+
             write_json_file(self.playback_history_path, self.videos)
         except Exception as e:
             logger.error(f"Error inserting new video: {e}")
@@ -36,12 +39,14 @@ class VideoMemoryManager:
             for video_data in self.videos.values():
                 total_size += video_data['size']
 
+            logger.debug(f"Total used space: {total_size}")
+
             return total_size
         except Exception as e:
             logger.error(f"Error calculating total disk space used: {e}")
             return 0
 
-    def file_path(self, x): return os.path.join(self.playback_history_path, x)
+    def file_path(self, x): return os.path.join(VIDEOS_DIR, x)
 
     def is_enough_space(self, new_video_size):
         try:
@@ -55,29 +60,27 @@ class VideoMemoryManager:
 
     def delete_video(self, name):
         try:
-            self.videos.pop(name, None)
             video_path = self.file_path(name)
+            logger.debug(f"deleted video with path: {video_path}")
             if os.path.exists(video_path):
                 os.remove(video_path)
             write_json_file(self.playback_history_path, self.videos)
-
+            logger.info(f"video deleted: {name}")
+            self.videos.pop(name, None)
         except Exception as e:
             logger.error(f"Error deleting video: {e}")
 
     def find_least_recently_used_video(self):
         try:
-            print(self.videos)
             if not self.videos:
+                logger.debug(
+                    "No videos found -> find_least_recently_used_video()")
                 return None
 
             sorted_videos = dict(
                 sorted(self.videos.items(), key=lambda x: x[1]['last_played']))
 
-            print(sorted_videos)
-
             least_recently_video_name = list(sorted_videos.keys())[0]
-
-            print(least_recently_video_name)
 
             try:
                 video_data = sorted_videos[least_recently_video_name]
@@ -93,25 +96,47 @@ class VideoMemoryManager:
             logger.error(f"Error deleting video: {e}")
 
     def make_space(self, size):
-        used_space = self.get_total_disk_space_used()
-        available_space = self.max_storage_size - used_space
+        try:
+            logger.info("Creating space for new video.")
+            used_space = self.get_total_disk_space_used()
+            available_space = self.max_storage_size - used_space
+            count = 0
+            logger.debug(
+                f"used_space: {used_space}  available_space: {available_space}  size: {size}")
+            while available_space < size:
+                video = self.find_least_recently_used_video()
+                logger.debug(f"least recently played video: {str(video)}")
+                if video:
+                    self.delete_video(video["name"])
+                    used_space = self.get_total_disk_space_used()
+                    available_space = self.max_storage_size - used_space
+                    count += 1
+                else:
+                    break
 
-        while available_space > size:
-            video = self.find_least_recently_used_video()
-            print(f"least recently used: {str(video)}")
-            if video:
-                self.delete_video(video["name"])
-                used_space = self.get_total_disk_space_used()
-                available_space = self.max_storage_size - used_space
+            if count > 0:
+                logger.info(f"{count} videos deleted")
             else:
-                break
+                logger.info(f"no deletion required")
+        except Exception as e:
+            logger.error(e)
 
     def update_last_played(self, name):
-        video = self.videos[name]
-        if video:
-            updated_video = {
-                "size": video["size"],
-                "last_played": time.time()
-            }
-            self.videos[name] = updated_video
-            write_json_file(self.playback_history_path, self.videos)
+        try:
+            video = self.videos[name]
+            if video:
+                updated_video = {
+                    "size": video["size"],
+                    "last_played": time.time()
+                }
+                self.videos[name] = updated_video
+                write_json_file(self.playback_history_path, self.videos)
+        except Exception as e:
+            logger.error(e)
+
+    def clear_all_videos(self):
+        try:
+            for video in self.videos.keys():
+                self.delete_video(video)
+        except Exception as e:
+            logger.error(e)

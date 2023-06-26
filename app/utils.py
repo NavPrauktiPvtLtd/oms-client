@@ -1,16 +1,23 @@
 from logger.logger import setup_applevel_logger
 import json
+from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 import os
 from pathlib import Path
 
+load_dotenv()
+
 logger = setup_applevel_logger(__name__)
 
-# MAX_VIDEO_STORAGE_SIZE = int(os.getenv(
-#     'MAX_VIDEO_STORAGE_SIZE', 0))  # this value is in bytes
+MAX_VIDEO_STORAGE_SIZE = int(os.getenv(
+    'MAX_VIDEO_STORAGE_SIZE', 20000000000))
+
 MAX_VIDEO_STORAGE_SIZE = 44657917
+
 BASE_DIR = str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+
 VIDEOS_DIR = os.path.join(BASE_DIR, "videos")
+
 VIDEOS_PLAYBACK_HISTORY_PATH = os.path.join(
     BASE_DIR, "videos/playback_history.json")
 
