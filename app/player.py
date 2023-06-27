@@ -38,11 +38,11 @@ class Player:
             self.playbackID = None
             event_manager = self.media_player.event_manager()
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerPlayed, self.on_player_played)
+                vlc.EventType.MediaListPlayerPlayed, self.on_player_played)  # type: ignore
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerStopped, self.on_player_stopped)
+                vlc.EventType.MediaListPlayerStopped, self.on_player_stopped)  # type: ignore
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerNextItemSet, self.on_player_next)
+                vlc.EventType.MediaListPlayerNextItemSet, self.on_player_next)  # type: ignore
         else:
             logger.error('Media player is None')
 
@@ -72,10 +72,12 @@ class Player:
 
         if loop:
             logger.debug('setting loop to true')
-            self.media_player.set_playback_mode(vlc.PlaybackMode.loop)
+            self.media_player.set_playback_mode(
+                vlc.PlaybackMode.loop)  # type: ignore
         else:
             logger.debug('setting loop to false')
-            self.media_player.set_playback_mode(vlc.PlaybackMode.default)
+            self.media_player.set_playback_mode(
+                vlc.PlaybackMode.default)  # type: ignore
         self.media_player.play()
 
         if not loop:
@@ -148,12 +150,12 @@ class Player:
             self.send_video_started_message(
                 self.playbackID, current_video.id)
 
-    def get_current_video(self) -> Video:
+    def get_current_video(self) -> Video | None:
         if len(self.playlist) == 0 or self.playlist_index == None:
             return None
         return self.playlist[self.playlist_index]
 
-    def get_previous_video(self) -> Video:
+    def get_previous_video(self) -> Video | None:
         if self.total_videos == 0 or self.playlist_index == None:
             return None
 

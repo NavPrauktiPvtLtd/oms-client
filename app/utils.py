@@ -20,7 +20,7 @@ VIDEOS_PLAYBACK_HISTORY_PATH = os.path.join(
     BASE_DIR, "videos/playback_history.json")
 
 
-def publish_message(client: mqtt.Client, topic: str, message, qos=0):
+def publish_message(client: mqtt.Client | None, topic: str, message, qos=0):
     if not client:
         logger.error('Mqtt client is None')
         return
@@ -33,8 +33,8 @@ def publish_message(client: mqtt.Client, topic: str, message, qos=0):
 
 def get_data_from_message(message):
     try:
-        dataStr = str(message.payload.decode("utf-8"))
-        return json.loads(dataStr)
+        data_str = str(message.payload.decode("utf-8"))
+        return json.loads(data_str)
     except Exception as e:
         logger.error(e)
 

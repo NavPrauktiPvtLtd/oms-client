@@ -1,16 +1,16 @@
 from enum import Enum
- 
-class Topic(Enum):
-    SPRING = 'SPRING'
-    SUMMER = 'SUMMER'
-    AUTUMN = 'AUTUMN'
-    WINTER = 'WINTER'
-    
+
+
+class Topic(str, Enum):
+    NODE_STATE = 'NODE_STATE'
+    PLAY_VIDEO = 'PLAY_VIDEO'
+    DISPLAY_URL = 'DISPLAY_URL'
+    PLAY_PLAYLIST = 'PLAY_PLAYLIST'
+    STOP_MEDIA = 'STOP_MEDIA'
+    SET_SCHEDULE = 'SET_SCHEDULE'
+    REQUEST_SCHEDULE = 'REQUEST_SCHEDULE'
+    SET_DEFAULT_VIDEO = 'SET_DEFAULT_VIDEO'
+    REQUEST_DEFAULT_VIDEO = 'REQUEST_DEFAULT_VIDEO'
+
     def __str__(self) -> str:
         return self.value
-
-
-class MQTT_TOPIC():
-    def __init__(self,serial_no:str):
-        self.serial_no = serial_no
-

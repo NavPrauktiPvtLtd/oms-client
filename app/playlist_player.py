@@ -40,11 +40,11 @@ class PlaylistPlayer:
             self.videoPlaybackID = {}
             event_manager = self.media_player.event_manager()
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerPlayed, self.on_player_played)
+                vlc.EventType.MediaListPlayerPlayed, self.on_player_played)  # type: ignore
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerStopped, self.on_player_stopped)
+                vlc.EventType.MediaListPlayerStopped, self.on_player_stopped)  # type: ignore
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerNextItemSet, self.on_player_next)
+                vlc.EventType.MediaListPlayerNextItemSet, self.on_player_next)  # type: ignore
         else:
             logger.error('Media player is None')
 
@@ -82,10 +82,12 @@ class PlaylistPlayer:
 
         if loop:
             logger.debug('setting loop to true')
-            self.media_player.set_playback_mode(vlc.PlaybackMode.loop)
+            self.media_player.set_playback_mode(
+                vlc.PlaybackMode.loop)  # type: ignore
         else:
             logger.debug('setting loop to false')
-            self.media_player.set_playback_mode(vlc.PlaybackMode.default)
+            self.media_player.set_playback_mode(
+                vlc.PlaybackMode.default)  # type: ignore
         self.media_player.play()
 
     # without this function the player get stucked after video is done playing

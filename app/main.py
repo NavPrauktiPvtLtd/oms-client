@@ -9,6 +9,7 @@ from playlist_player import PlaylistPlayer
 from utils import VIDEOS_DIR, VIDEOS_PLAYBACK_HISTORY_PATH, check_and_create_file
 from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
+from .topic import Topic
 from logger.logger import setup_applevel_logger
 from utils import get_data_from_message, publish_message
 from media_handlers.url_handler import URLHandler, URLData
@@ -33,10 +34,14 @@ if not os.path.exists(VIDEOS_DIR):
 
 SERIAL_NO = os.getenv('SERIAL_NO')
 
-MQTT_HOST = "test.mosquitto.org"
+MQTT_HOST = os.getenv('MQTT_HOST')
 
 if not SERIAL_NO:
-    logger.error('Serial no not found')
+    logger.error('Serial Number not found')
+    exit()
+
+if not MQTT_HOST:
+    logger.error('MQTT host not found')
     exit()
 
 
@@ -55,25 +60,26 @@ def job_that_executes_once():
 
 
 class APP:
-    def __init__(self, serialNo: str):
+    def __init__(self, serialNo: str, mqtt_host: str):
         self.client = None
         self.player = None
         self.playlist_player = None
         self.serialNo = serialNo
         self.nodeScheduler = schedule.Scheduler()
         self.scheduleId = None
+        self.mqtt_host = mqtt_host
 
     def on_mqtt_connect(self, client, userdata, flags, rc):
         if rc == 0:
             logger.info("Connected to broker")
-            publish_message(client, "NODE_STATE", {
+            publish_message(client, Topic.NODE_STATE, {
                             "serialNo": self.serialNo, "status": "Idle"}, qos=1)
-            client.subscribe(format_topic_name("DISPLAY_URL"))
-            client.subscribe(format_topic_name("STOP_MEDIA"))
-            client.subscribe(format_topic_name("PLAY_VIDEO"))
-            client.subscribe(format_topic_name("PLAY_PLAYLIST"))
-            client.subscribe(format_topic_name("SET_SCHEDULE"))
-            publish_message(client, "REQUEST_SCHEDULE", {
+            client.subscribe(format_topic_name(Topic.DISPLAY_URL))
+            client.subscribe(format_topic_name(Topic.STOP_MEDIA))
+            client.subscribe(format_topic_name(Topic.PLAY_VIDEO))
+            client.subscribe(format_topic_name(Topic.PLAY_PLAYLIST))
+            client.subscribe(format_topic_name(Topic.SET_SCHEDULE))
+            publish_message(client, Topic.REQUEST_SCHEDULE, {
                             "serialNo": self.serialNo}, qos=1)
 
         else:
@@ -185,22 +191,22 @@ class APP:
             self.client = mqtt.Client(self.serialNo)
             self.player = Player(self.client, self.serialNo)
             self.playlist_player = PlaylistPlayer(self.client, self.serialNo)
-            self.client.will_set('NODE_STATE', payload=str(json.dumps(
+            self.client.will_set(Topic.NODE_STATE, payload=str(json.dumps(
                 {"serialNo": self.serialNo, "status": 'Offline'})), qos=2)
-            self.client.connect(host=MQTT_HOST)
+            self.client.connect(host=self.mqtt_host)
             self.client.on_connect = self.on_mqtt_connect
             self.client.on_disconnect = self.on_mqtt_disconnect
             self.client.on_message = self.on_mqtt_message
             self.client.message_callback_add(
-                format_topic_name("PLAY_VIDEO"), self.on_media_video)
+                format_topic_name(Topic.PLAY_VIDEO), self.on_media_video)
             self.client.message_callback_add(
-                format_topic_name("DISPLAY_URL"), self.on_media_url)
+                format_topic_name(Topic.DISPLAY_URL), self.on_media_url)
             self.client.message_callback_add(format_topic_name(
-                "PLAY_PLAYLIST"), self.on_media_playlist)
+                Topic.PLAY_PLAYLIST), self.on_media_playlist)
             self.client.message_callback_add(
-                format_topic_name("STOP_MEDIA"), self.on_media_terminate)
+                format_topic_name(Topic.STOP_MEDIA), self.on_media_terminate)
             self.client.message_callback_add(
-                format_topic_name("SET_SCHEDULE"), self.on_set_schedule)
+                format_topic_name(Topic.SET_SCHEDULE), self.on_set_schedule)
             self.stop_run_pending_jobs = self.run_pending_jobs()
             self.client.loop_forever()
         except Exception as e:
@@ -209,5 +215,5 @@ class APP:
             self.start()
 
 
-app = APP(SERIAL_NO)
+app = APP(SERIAL_NO, MQTT_HOST)
 app.start()
