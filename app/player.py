@@ -5,6 +5,7 @@ from threading import Thread
 import paho.mqtt.client as mqtt
 from utils import publish_message
 from logger.logger import setup_applevel_logger
+from topic import Topic
 import datetime
 import time
 import uuid
@@ -68,7 +69,7 @@ class Player:
 
         self.total_videos = self.media_list.count()
 
-        print(f'total video: {self.total_videos}')
+        logger.debug(f'total video: {self.total_videos}')
 
         if loop:
             logger.debug('setting loop to true')
@@ -107,12 +108,11 @@ class Player:
             logger.error(e)
 
     def on_player_stopped(self, event):
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.serialNo, "status": "Idle"}, qos=1)
         current_video = self.get_current_video()
         current_playbackID = self.playbackID
-        print(current_video)
-        print(current_playbackID)
+
         if current_video and current_playbackID:
             self.send_video_ended_message(
                 current_playbackID, current_video.id)
@@ -191,7 +191,7 @@ class Player:
             'videoId': videoID
         }
 
-        publish_message(self.client, "VIDEO_PLAYBACK", data, qos=1)
+        publish_message(self.client, Topic.VIDEO_PLAYBACK, data, qos=1)
 
     def send_video_ended_message(self, playbackID, videoID):
         end_time = datetime.datetime.now()
@@ -203,4 +203,4 @@ class Player:
             'videoId': videoID
         }
 
-        publish_message(self.client, "VIDEO_PLAYBACK", data, qos=1)
+        publish_message(self.client, Topic.VIDEO_PLAYBACK, data, qos=1)

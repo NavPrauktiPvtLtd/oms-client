@@ -7,6 +7,7 @@ from playlist_player import PlaylistPlayer
 import os
 from typing import List, Optional
 import requests
+from topic import Topic
 from media_handlers.video_handler import Video
 
 logger = setup_applevel_logger(__name__)
@@ -48,12 +49,12 @@ class PlaylistHandler:
         self.play_playlist(videos, loop, id)
 
     def download_video_from_url(self, url: str, path: str):
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.searialNo, "status": "Processing"})
         r = requests.get(url)
         with open(path, 'wb') as f:
             f.write(r.content)
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.searialNo, "status": "Idle"})
 
     def play_playlist(self, videos: List[Video], loop: bool, id: str):
@@ -63,7 +64,7 @@ class PlaylistHandler:
             video.path = self.file_path(video.name)
             playlist_paths.append(video)
 
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.searialNo, "status": "Playing", "playingData": {"type": "VideoList", "mediaId": id}})
         self.player.play(id, playlist_paths, loop)
 

@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 from utils import publish_message, VIDEOS_PLAYBACK_HISTORY_PATH, MAX_VIDEO_STORAGE_SIZE
 from player import Player
 from threading import Thread
+from topic import Topic
 import os
 import requests
 from .video_memory_manager import VideoMemoryManager
@@ -66,14 +67,14 @@ class VideoHandler:
     def file_path(self, x): return os.path.join(self.dir, x)
 
     def download_video_from_url(self, url, path):
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.searialNo, "status": "Processing"})
         r = requests.get(url)
         with open(path, 'wb') as f:
             f.write(r.content)
 
     def play_video(self):
-        publish_message(self.client, "NODE_STATE", {"serialNo": self.searialNo, "status": "Playing", "playingData": {
+        publish_message(self.client, Topic.NODE_STATE, {"serialNo": self.searialNo, "status": "Playing", "playingData": {
                         "type": "Video", "mediaId": self.data.video.id}})
         logger.debug(self.data.video)
         t1 = Thread(target=self.player.play, args=(

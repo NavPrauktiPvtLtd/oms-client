@@ -9,7 +9,7 @@ from playlist_player import PlaylistPlayer
 from utils import VIDEOS_DIR, VIDEOS_PLAYBACK_HISTORY_PATH, check_and_create_file
 from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
-from .topic import Topic
+from topic import Topic
 from logger.logger import setup_applevel_logger
 from utils import get_data_from_message, publish_message
 from media_handlers.url_handler import URLHandler, URLData
@@ -136,10 +136,21 @@ class APP:
             logger.error(e)
 
     def request_default_video(self):
-        pass
+        publish_message(self.client, Topic.REQUEST_DEFAULT_VIDEO, {
+            "serialNo": self.serialNo}, qos=1)
 
-    def on_default_video_received(self):
-        pass
+    def on_set_default_video(self, client, userdata, message):
+        if not self.player:
+            return
+        self.terminate_all_active_media()
+        msgData = get_data_from_message(message)
+        if msgData:
+            data = VideoData(**msgData)
+            video_handler = VideoHandler(
+                client=client, data=data, player=self.player, serialNo=self.serialNo, dir=VIDEOS_DIR)
+            video_handler.play()
+        else:
+            logger.error('No msg data in set_video message')
 
     def terminate_all_active_media(self):
         logger.info('Terminating all active media')

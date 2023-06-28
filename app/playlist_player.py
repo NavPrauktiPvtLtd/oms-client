@@ -5,6 +5,7 @@ from threading import Thread
 import paho.mqtt.client as mqtt
 from utils import publish_message
 from logger.logger import setup_applevel_logger
+from topic import Topic
 import datetime
 import time
 import uuid
@@ -78,7 +79,7 @@ class PlaylistPlayer:
 
         self.total_videos = self.media_list.count()
 
-        print(f'total video: {self.total_videos}')
+        logger.debug(f'total video: {self.total_videos}')
 
         if loop:
             logger.debug('setting loop to true')
@@ -123,7 +124,7 @@ class PlaylistPlayer:
             logger.error(e)
 
     def on_player_stopped(self, event):
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.serialNo, "status": "Idle"}, qos=1)
 
         current_video = self.get_current_video()
@@ -206,7 +207,7 @@ class PlaylistPlayer:
             'videoListId': self.playlistID
         }
 
-        publish_message(self.client, "PLAYLIST_PLAYBACK", data, qos=1)
+        publish_message(self.client, Topic.PLAY_PLAYLIST, data, qos=1)
 
     def send_playlist_ended_message(self):
         end_time = datetime.datetime.now()
@@ -218,7 +219,7 @@ class PlaylistPlayer:
             'videoListId': self.playlistID
         }
 
-        publish_message(self.client, "PLAYLIST_PLAYBACK", data, qos=1)
+        publish_message(self.client, Topic.PLAY_PLAYLIST, data, qos=1)
 
     def send_playlist_video_played_message(self, video_id: str):
         end_time = datetime.datetime.now()
@@ -230,4 +231,5 @@ class PlaylistPlayer:
             'playlistPlaybackVideoId': self.get_video_playback_id(video_id),
             'end_time': str(end_time)
         }
-        publish_message(self.client, "PLAYLIST_PLAYBACK_VIDEO", data, qos=1)
+        publish_message(
+            self.client, Topic.PLAYLIST_PLAYBACK_VIDEO, data, qos=1)

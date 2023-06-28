@@ -135,6 +135,7 @@ class VideoMemoryManager:
             logger.error(e)
 
     def clear_all_videos(self):
+        logger.debug('Deleting all videos')
         try:
             for video in self.videos.keys():
                 self.delete_video(video)

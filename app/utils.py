@@ -12,7 +12,8 @@ logger = setup_applevel_logger(__name__)
 MAX_VIDEO_STORAGE_SIZE = int(os.getenv(
     'MAX_VIDEO_STORAGE_SIZE', 20000000000))
 
-BASE_DIR = str(Path(os.path.dirname(os.path.abspath(__file__))).parents[0])
+BASE_DIR = str(Path(os.path.dirname(os.path.abspath(__file__))
+                    ).parents[0])  # type: ignore
 
 VIDEOS_DIR = os.path.join(BASE_DIR, "videos")
 

@@ -4,6 +4,7 @@ from logger.logger import setup_applevel_logger
 from threading import Thread
 import paho.mqtt.client as mqtt
 from utils import publish_message
+from topic import Topic
 import time
 import subprocess
 import schedule
@@ -39,7 +40,6 @@ class URLHandler:
 
     def play(self):
         # if the duration is less than 0 we will keep the browser running for infinite time
-        # print(self.data)
         # if self.data.duration > 0:
         #     schedule.every(self.data.duration).seconds.do(
         #         job_that_executes_once)
@@ -53,7 +53,7 @@ class URLHandler:
 
     def open_browser(self):
         url_to_open = self.data.url.url
-        publish_message(self.client, "NODE_STATE", {"serialNo": self.searialNo, "status": "Playing", "playingData": {
+        publish_message(self.client, Topic.NODE_STATE, {"serialNo": self.searialNo, "status": "Playing", "playingData": {
                         "type": "Url", "mediaId": self.data.url.id}})
         logger.info(f'Opening browser with link : {url_to_open}')
         subprocess.call(["firefox", f"--kiosk={url_to_open}"])
@@ -62,5 +62,5 @@ class URLHandler:
     def close_browser(self, seconds):
         time.sleep(seconds)
         subprocess.call(["pkill", "firefox"])
-        publish_message(self.client, "NODE_STATE", {
+        publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.searialNo, "status": "Idle"})

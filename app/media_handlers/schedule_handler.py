@@ -11,6 +11,7 @@ from logger.logger import setup_applevel_logger
 from media_handlers.playlist_handler import PlaylistData, PlaylistHandler
 from player import Player
 from playlist_player import PlaylistPlayer
+from topic import Topic
 
 
 logger = setup_applevel_logger(__name__)
@@ -49,7 +50,7 @@ class ScheduleHandler:
     def __del__(self):
         logger.debug('Destructor called, ScheduleHandler deleted.')
 
-    def schedule_video(self, start_time: str, end_time: str, video: Video, loop: bool):
+    def schedule_video(self, start_time: str, end_time: str, video: Video, loop: bool | None):
         logger.debug(
             f'Schedule created: start-time - {start_time} and end-time - {end_time} | media-type: video | media = {video.name}')
         if not loop:
@@ -97,7 +98,7 @@ class ScheduleHandler:
             'scheduleItemId': id,
             'is_active': is_active
         }
-        publish_message(self.client, "UPDATE_ACTIVE_SCHEDULE_ITEM", data)
+        publish_message(self.client, Topic.UPDATE_ACTIVE_SCHEDULE_ITEM, data)
 
     def start(self):
         logger.info(msg=f'Setting new schedule : {self.data.name}')
