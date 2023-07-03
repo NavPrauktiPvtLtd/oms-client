@@ -48,14 +48,8 @@ dpkg -s python3-pip 2>/dev/null >/dev/null || sudo apt install python3-pip -y
 
 dpkg -s supervisor 2>/dev/null >/dev/null || sudo apt install supervisor -y
 
-sudo apt install python3-venv -y
+mkdir videos
 
-pip3 install virtualenv
-
-echo "Creating virtual environment"
-
-python3 -m venv venv
-. ./venv/bin/activate
 pip3 install -r requirements.txt
 
 sudo chmod +x run.sh
