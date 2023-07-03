@@ -54,7 +54,6 @@ def job():
 
 def job_that_executes_once():
     # Do some work that only needs to happen once...
-    print('inside job')
     subprocess.call(["pkill", "firefox"])
     return schedule.CancelJob
 
