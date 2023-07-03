@@ -21,7 +21,6 @@ load_dotenv()
 
 logger = setup_applevel_logger(__name__)
 
-
 VIDEOS_DIR = VIDEOS_DIR
 
 
@@ -78,8 +77,10 @@ class APP:
             client.subscribe(format_topic_name(Topic.PLAY_VIDEO))
             client.subscribe(format_topic_name(Topic.PLAY_PLAYLIST))
             client.subscribe(format_topic_name(Topic.SET_SCHEDULE))
+            client.subscribe(format_topic_name(Topic.SET_DEFAULT_VIDEO))
             publish_message(client, Topic.REQUEST_SCHEDULE, {
                             "serialNo": self.serialNo}, qos=1)
+            self.request_default_video()
 
         else:
             logger.error("Connection failed")
@@ -217,6 +218,8 @@ class APP:
                 format_topic_name(Topic.STOP_MEDIA), self.on_media_terminate)
             self.client.message_callback_add(
                 format_topic_name(Topic.SET_SCHEDULE), self.on_set_schedule)
+            self.client.message_callback_add(
+                format_topic_name(Topic.SET_DEFAULT_VIDEO), self.on_set_default_video)
             self.stop_run_pending_jobs = self.run_pending_jobs()
             self.client.loop_forever()
         except Exception as e:

@@ -20,11 +20,15 @@ read -p "Enter MQTT_HOST: " MQTT_HOST
 read -p "Enter DISPLAY [default: :0]: " DISPLAY
 DISPLAY=${DISPLAY:-:0}  # Set default value if empty
 
+read -p "Enter DEVICE_TYPE (1- linux, 2 - pi) [default: 1]: " DEVICE_TYPE
+DEVICE_TYPE=${DEVICE_TYPE:-:1}  # Set default value if empty
+
 cat << EOF > .env
 SERIAL_NO=$SERIAL_NO
 MAX_VIDEO_STORAGE_SIZE=$MAX_VIDEO_STORAGE_SIZE
 MQTT_HOST=$MQTT_HOST
 DISPLAY=$DISPLAY
+DEVICE_TYPE=$DEVICE_TYPE
 EOF
 
 echo "Environment file generated successfully!"
@@ -35,8 +39,6 @@ sudo apt-get update -y
 sudo apt-get dist-upgrade -y
 
 echo "Installing required packages"
-
-sudo apt install firefox-esr -y
 
 dpkg -s vlc 2>/dev/null >/dev/null || sudo apt install vlc -y
 

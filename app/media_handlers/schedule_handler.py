@@ -50,7 +50,7 @@ class ScheduleHandler:
     def __del__(self):
         logger.debug('Destructor called, ScheduleHandler deleted.')
 
-    def schedule_video(self, start_time: str, end_time: str, video: Video, loop: bool | None):
+    def schedule_video(self, start_time: str, end_time: str, video: Video, loop: bool):
         logger.debug(
             f'Schedule created: start-time - {start_time} and end-time - {end_time} | media-type: video | media = {video.name}')
         if not loop:
@@ -80,7 +80,7 @@ class ScheduleHandler:
             self.handle_url_play, url_handler)
         self.node_schedular.every().day.at(end_time).do(url_handler.close_browser, 0)
 
-    def schedule_playlist(self, start_time: str, end_time: str, playlist_data: PlaylistData, loop: bool | None):
+    def schedule_playlist(self, start_time: str, end_time: str, playlist_data: PlaylistData, loop: bool):
         logger.debug(
             f'Schedule created: start-time - {start_time} and end-time - {end_time} | media-type: playlist | media = {playlist_data.name}')
         if not loop:

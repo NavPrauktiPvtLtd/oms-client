@@ -150,12 +150,12 @@ class Player:
             self.send_video_started_message(
                 self.playbackID, current_video.id)
 
-    def get_current_video(self) -> Video | None:
+    def get_current_video(self) -> Video:
         if len(self.playlist) == 0 or self.playlist_index == None:
             return None
         return self.playlist[self.playlist_index]
 
-    def get_previous_video(self) -> Video | None:
+    def get_previous_video(self) -> Video:
         if self.total_videos == 0 or self.playlist_index == None:
             return None
 

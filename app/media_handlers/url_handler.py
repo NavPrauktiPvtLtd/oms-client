@@ -3,7 +3,7 @@ import json
 from logger.logger import setup_applevel_logger
 from threading import Thread
 import paho.mqtt.client as mqtt
-from utils import publish_message
+from utils import publish_message, DEVICE_TYPE
 from topic import Topic
 import time
 import subprocess
@@ -14,7 +14,10 @@ logger = setup_applevel_logger(__name__)
 
 def job_that_executes_once():
     # Do some work that only needs to happen once...
-    subprocess.call(["pkill", "firefox"])
+    if DEVICE_TYPE == 1:
+        subprocess.call(["pkill", "firefox"])
+    else:
+        subprocess.call(["pkill", "chromium-browse"])
     return schedule.CancelJob
 
 
@@ -56,11 +59,17 @@ class URLHandler:
         publish_message(self.client, Topic.NODE_STATE, {"serialNo": self.searialNo, "status": "Playing", "playingData": {
                         "type": "Url", "mediaId": self.data.url.id}})
         logger.info(f'Opening browser with link : {url_to_open}')
-        subprocess.call(["firefox", f"--kiosk={url_to_open}"])
+        if DEVICE_TYPE == 1:
+            subprocess.call(["firefox", f"--kiosk={url_to_open}"])
+        else:
+            subprocess.call(["chromium-browser", f"--kiosk {url_to_open}"])
 
     # need fix: it will close the browser even if another url is playing
     def close_browser(self, seconds):
         time.sleep(seconds)
-        subprocess.call(["pkill", "firefox"])
+        if DEVICE_TYPE == 1:
+            subprocess.call(["pkill", "firefox"])
+        else:
+            subprocess.call(["pkill", "chromium-browse"])
         publish_message(self.client, Topic.NODE_STATE, {
                         "serialNo": self.searialNo, "status": "Idle"})
