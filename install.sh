@@ -23,14 +23,14 @@ DISPLAY=${DISPLAY:-:0}  # Set default value if empty
 read -p "Enter DEVICE_TYPE (1- linux, 2 - pi) [default: 1]: " DEVICE_TYPE
 DEVICE_TYPE=${DEVICE_TYPE:-:1}  
                                                                                                                                                                                                                                                       
-read -p "Enter update interval[2-59]: [default: 1 min] " INTERVAL
-INTERVAL=${INTERVAL:-:1}
+# read -p "Enter update interval[2-59]: [default: 1 min] " INTERVAL
+# INTERVAL=${INTERVAL:-:1}
 
-# Validate the user input
-if [[ ! $INTERVAL =~ ^[0-9]+$ ]]; then
-  echo "Invalid input. Please enter a positive integer value."
-  exit 1
-fi
+# # Validate the user input
+# if [[ ! $INTERVAL =~ ^[0-9]+$ ]]; then
+#   echo "Invalid input. Please enter a positive integer value."
+#   exit 1
+# fi
 
 cat << EOF > .env
 SERIAL_NO=$SERIAL_NO
@@ -85,11 +85,11 @@ cp -f oms-client.conf /etc/supervisor/conf.d/
 
 service supervisor restart
 
-# get the current dir path
-current_dir=$(dirname "$(readlink -f "$0")")
+# # get the current dir path
+# current_dir=$(dirname "$(readlink -f "$0")")
 
-chmod +x "${current_dir}/update.sh"
+# chmod +x "${current_dir}/update.sh"
 
-(crontab -l ; echo "*/$minutes * * * * ${current_dir}/update.sh") | crontab -
+# (crontab -l ; echo "*/$minutes * * * * ${current_dir}/update.sh") | crontab -
 
 echo "Finished!"
