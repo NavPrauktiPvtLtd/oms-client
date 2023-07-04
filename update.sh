@@ -1,9 +1,9 @@
 #!/bin/bash
 
 output=$(git fetch -v --dry-run | grep "\[up-to-date\]")
-echo $output
+echo "$output"
 
-if [ -z "$output"=="" ]; then
+if [ -z "$output" ]; then
     echo "no updates available"
 else
     echo "updates available"
@@ -19,5 +19,11 @@ else
     ./actions.sh
 
     # restart server
-    sudo service supervisor restart 
+    sudo service supervisor restart
 fi
+
+
+
+
+
+
