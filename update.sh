@@ -19,5 +19,5 @@ else
     ./actions.sh
 
     # restart server
-    service supervisor restart 
+    sudo service supervisor restart 
 fi
