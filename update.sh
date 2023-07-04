@@ -1,9 +1,9 @@
 #!/bin/bash
 
-output=$(git fetch -v --dry-run | grep "[up-to-date]")
+output=$(git fetch -v --dry-run | grep "\[up-to-date\]")
 echo $output
 
-if [ "$output"=="" ]; then
+if [ -z "$output"=="" ]; then
     echo "no updates available"
 else
     echo "updates available"
@@ -11,7 +11,7 @@ else
     sudo chmod +x actions.sh
 
     # first stop the already running application
-    supervisorctl stop oms_client
+    sudo supervisorctl stop oms_client
 
     # pull the latest repo
     git pull
