@@ -62,9 +62,3 @@ def check_and_create_file(file_path, initial_content=None):
     else:
         logger.info(f"File '{file_path}' already exists.")
 
-
-print("sssdasdasdas")
-print("sssdasdasdas")
-
-print("sssdasdasdas")
-print("sssdasdasdas")
