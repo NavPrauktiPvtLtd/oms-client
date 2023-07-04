@@ -64,7 +64,7 @@ cat <<EOF >oms-client.conf
 [program:oms_client]
 command=$('pwd')/run.sh
 directory=$('pwd')
-user=$('whoami')
+user=pi
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/oms.err.log
