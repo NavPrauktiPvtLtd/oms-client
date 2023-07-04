@@ -8,22 +8,7 @@ local_head=$(git rev-parse HEAD)
 
 # Compare the local HEAD with the fetched branch's HEAD
 if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
-    echo "updates available"
-
-    sudo chmod +x actions.sh
-
-    # first stop the already running application
-    sudo supervisorctl stop oms_client
-
-    # pull the latest repo
-    git pull
-
-    ./actions.sh
-
-    # restart server
-    sudo service supervisor restart
+    echo "Repository has been updated."
 else
     echo "Repository is up to date."
 fi
-
-
