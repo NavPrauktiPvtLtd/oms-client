@@ -61,3 +61,6 @@ def check_and_create_file(file_path, initial_content=None):
         logger.info(f"File '{file_path}' created.")
     else:
         logger.info(f"File '{file_path}' already exists.")
+
+
+print("helllllllllllllllllllllllllo")
