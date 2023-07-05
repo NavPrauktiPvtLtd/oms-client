@@ -10,13 +10,14 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 
-chmod +x "./scripts/run.sh"
 chmod +x "./scripts/update.sh"
 chmod +x "./scripts/cron.sh"
 chmod +x "./scripts/actions.sh"
 chmod +x "./scripts/delete-log.sh"
 chmod +x "./scripts/restart.sh"
 chmod +x "./scripts/uninstall.sh"
+chmod +x "./scripts/stop.sh"
+
 
 read -p "Enter SERIAL_NO: " SERIAL_NO
 
