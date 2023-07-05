@@ -46,7 +46,6 @@ dpkg -s supervisor 2>/dev/null >/dev/null || sudo apt install supervisor -y
 
 sudo chmod +x run.sh update.sh cron.sh actions.sh delete-log.sh restart.sh uninstall.sh
 
-./cron.sh 
 
 #Create supervisor conf file
 
@@ -61,12 +60,13 @@ directory=$('pwd')
 user=pi
 autostart=true
 autorestart=true
-stderr_logfile=/var/log/oms.err.log
-stdout_logfile=/var/log/oms.out.log
+stderr_logfile=/home/pi/oms-client/err.log
+stdout_logfile=/home/pi/oms-client/out.log
 EOF
 
 cp -f oms_client.conf /etc/supervisor/conf.d/
 
+echo "adding cron jobs"
 # run the scrip to add cron jobs
 ./cron.sh
 
