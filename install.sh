@@ -9,15 +9,14 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-script_dir=$(dirname "$(readlink -f "$0")")
 
-chmod +x "${script_dir}/run.sh"
-chmod +x "${script_dir}/update.sh"
-chmod +x "${script_dir}/cron.sh"
-chmod +x "${script_dir}/actions.sh"
-chmod +x "${script_dir}/delete-log.sh"
-chmod +x "${script_dir}/restart.sh"
-chmod +x "${script_dir}/uninstall.sh"
+chmod +x "./scripts/run.sh"
+chmod +x "./scripts/update.sh"
+chmod +x "./scripts/cron.sh"
+chmod +x "./scripts/actions.sh"
+chmod +x "./scripts/delete-log.sh"
+chmod +x "./scripts/restart.sh"
+chmod +x "./scripts/uninstall.sh"
 
 read -p "Enter SERIAL_NO: " SERIAL_NO
 
@@ -65,8 +64,8 @@ echo "==========================================="
 
 cat <<EOF >oms_client.conf
 [program:oms_client]
-command=/home/pi/oms-client/scripts/run.sh
-directory=/home/pi/oms-client/scripts
+command=$('pwd')/run.sh
+directory=$('pwd')
 user=pi
 autostart=true
 autorestart=true
@@ -78,7 +77,6 @@ cp -f oms_client.conf /etc/supervisor/conf.d/
 
 
 
-cd ..
 
 cat << EOF > .env
 SERIAL_NO=$SERIAL_NO
