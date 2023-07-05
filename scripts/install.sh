@@ -70,8 +70,8 @@ directory=$('pwd')
 user=pi
 autostart=true
 autorestart=true
-stderr_logfile=/home/pi/oms-client/err.log
-stdout_logfile=/home/pi/oms-client/out.log
+stderr_logfile=/home/pi/oms-client/logs/err.log
+stdout_logfile=/home/pi/oms-client/logs/out.log
 EOF
 
 cp -f oms_client.conf /etc/supervisor/conf.d/
