@@ -78,7 +78,7 @@ cp -f oms_client.conf /etc/supervisor/conf.d/
 
 echo "adding cron jobs"
 # run the scrip to add cron jobs
-./cron.sh
+./${script_dir}/cron.sh"
 
 cd ..
 
