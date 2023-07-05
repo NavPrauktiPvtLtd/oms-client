@@ -49,6 +49,7 @@ sudo chmod +x run.sh update.sh cron.sh actions.sh
 #Create supervisor conf file
 
 echo "Creating supervisor config file"
+
 echo "==========================================="
 
 cat <<EOF >oms_client.conf
@@ -79,13 +80,16 @@ DISPLAY=$DISPLAY
 DEVICE_TYPE=$DEVICE_TYPE
 EOF
 
-mkdir videos
+if [ ! -d "videos" ]; then
+    mkdir videos
+fi
 
-mkdir logs
+if [ ! -d "logs" ]; then
+    mkdir logs
+fi
 
 pip3 install -r requirements.txt
 
 service supervisor restart
-
 
 echo "Finished!"
