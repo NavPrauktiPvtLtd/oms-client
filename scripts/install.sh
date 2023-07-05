@@ -98,7 +98,7 @@ if [ ! -d "logs" ]; then
     mkdir logs
 fi
 
-pip3 install -r requirements.txt
+pip3 install -r /home/pi/oms-client/requirements.txt
 
 service supervisor restart
 
