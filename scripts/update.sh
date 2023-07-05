@@ -19,9 +19,7 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
         sudo supervisorctl stop oms_client
         # Pull was successful, proceed with the next command
 
-        cd "$(dirname "$0")/scripts"
-
-        ./actions.sh
+        ./scripts/actions.sh
 
         # Restart server
         sudo service supervisor restart
