@@ -51,7 +51,7 @@ sudo chmod +x run.sh update.sh cron.sh actions.sh
 echo "Creating supervisor config file"
 echo "==========================================="
 
-cat <<EOF >oms-client.conf
+cat <<EOF >oms_client.conf
 [program:oms_client]
 command=$('pwd')/run.sh
 directory=$('pwd')
@@ -62,7 +62,7 @@ stderr_logfile=/var/log/oms.err.log
 stdout_logfile=/var/log/oms.out.log
 EOF
 
-cp -f oms-client.conf /etc/supervisor/conf.d/
+cp -f oms_client.conf /etc/supervisor/conf.d/
 
 # run the scrip to add cron jobs
 ./cron.sh

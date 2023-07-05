@@ -16,16 +16,18 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
 
     # first stop the already running application
     sudo supervisorctl stop oms_client
+    if git pull; then
+        # Pull was successful, proceed with the next command
 
-    # pull the latest repo
-    git pull
+        cd "$(dirname "$0")/scripts"
 
-    cd "$(dirname "$0")/scripts"
+        ./actions.sh
 
-    ./actions.sh
-
-    # restart server
-    sudo service supervisor restart
+        # Restart server
+        sudo service supervisor restart
+    else
+        echo "Git pull failed. Unable to proceed."
+    fi
 else
     echo "Repository is up to date."
 fi
