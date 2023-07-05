@@ -30,17 +30,28 @@ check_and_create_file(
 if not os.path.exists(VIDEOS_DIR):
     os.makedirs(VIDEOS_DIR)
 
-
 SERIAL_NO = os.getenv('SERIAL_NO')
 
 MQTT_HOST = os.getenv('MQTT_HOST')
+
+MQTT_USERNAME = os.getenv('MQTT_USERNAME')
+
+MQTT_PASSWORD = os.getenv('MQTT_PASSWORD')
 
 if not SERIAL_NO:
     logger.error('Serial Number not found')
     exit()
 
 if not MQTT_HOST:
-    logger.error('MQTT host not found')
+    logger.error('MQTT HOST not found')
+    exit()
+
+if not MQTT_USERNAME:
+    logger.error('MQTT USERNAME not found')
+    exit()
+
+if not MQTT_PASSWORD:
+    logger.error('MQTT PASSWORD not found')
     exit()
 
 
@@ -58,7 +69,7 @@ def job_that_executes_once():
 
 
 class APP:
-    def __init__(self, serialNo: str, mqtt_host: str):
+    def __init__(self, serialNo: str, mqtt_host: str, mqtt_username:str, mqtt_password: str):
         self.client = None
         self.player = None
         self.playlist_player = None
@@ -66,6 +77,8 @@ class APP:
         self.nodeScheduler = schedule.Scheduler()
         self.scheduleId = None
         self.mqtt_host = mqtt_host
+        self.mqtt_username = mqtt_username
+        self.mqtt_password = mqtt_password
 
     def on_mqtt_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -204,6 +217,7 @@ class APP:
             self.playlist_player = PlaylistPlayer(self.client, self.serialNo)
             self.client.will_set(Topic.NODE_STATE, payload=str(json.dumps(
                 {"serialNo": self.serialNo, "status": 'Offline'})), qos=2)
+            self.client.username_pw_set(self.mqtt_username, self.mqtt_password)
             self.client.connect(host=self.mqtt_host)
             self.client.on_connect = self.on_mqtt_connect
             self.client.on_disconnect = self.on_mqtt_disconnect
@@ -228,5 +242,5 @@ class APP:
             self.start()
 
 
-app = APP(SERIAL_NO, MQTT_HOST)
+app = APP(SERIAL_NO, MQTT_HOST, MQTT_USERNAME,MQTT_PASSWORD)
 app.start()

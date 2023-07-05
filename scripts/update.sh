@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 
 # Fetch changes from the remote repository
 git fetch
@@ -19,6 +19,8 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
 
     # pull the latest repo
     git pull
+
+    cd "$(dirname "$0")/scripts"
 
     ./actions.sh
 
