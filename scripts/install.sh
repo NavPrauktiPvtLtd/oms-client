@@ -44,7 +44,9 @@ dpkg -s python3-pip 2>/dev/null >/dev/null || sudo apt install python3-pip -y
 
 dpkg -s supervisor 2>/dev/null >/dev/null || sudo apt install supervisor -y
 
-sudo chmod +x run.sh update.sh cron.sh actions.sh
+sudo chmod +x run.sh update.sh cron.sh actions.sh delete-log.sh restart.sh uninstall.sh
+
+./cron.sh 
 
 #Create supervisor conf file
 
