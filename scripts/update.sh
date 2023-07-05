@@ -12,11 +12,11 @@ local_head=$(git rev-parse HEAD)
 if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
     echo "updates available"
 
-    sudo chmod +x actions.sh
-
-    # first stop the already running application
-    sudo supervisorctl stop oms_client
     if git pull; then
+        sudo chmod +x actions.sh
+
+        # first stop the already running application
+        sudo supervisorctl stop oms_client
         # Pull was successful, proceed with the next command
 
         cd "$(dirname "$0")/scripts"
