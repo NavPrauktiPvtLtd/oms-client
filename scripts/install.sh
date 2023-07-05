@@ -9,6 +9,16 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+script_dir=$(dirname "$(readlink -f "$0")")
+
+chmod +x "${script_dir}/run.sh"
+chmod +x "${script_dir}/update.sh"
+chmod +x "${script_dir}/cron.sh"
+chmod +x "${script_dir}/actions.sh"
+chmod +x "${script_dir}/delete-log.sh"
+chmod +x "${script_dir}/restart.sh"
+chmod +x "${script_dir}/uninstall.sh"
+
 read -p "Enter SERIAL_NO: " SERIAL_NO
 
 read -p "Enter MAX_VIDEO_STORAGE_SIZE [default: 20000000000]: " MAX_VIDEO_STORAGE_SIZE
@@ -44,7 +54,7 @@ dpkg -s python3-pip 2>/dev/null >/dev/null || sudo apt install python3-pip -y
 
 dpkg -s supervisor 2>/dev/null >/dev/null || sudo apt install supervisor -y
 
-sudo chmod +x run.sh update.sh cron.sh actions.sh delete-log.sh restart.sh uninstall.sh
+
 
 
 #Create supervisor conf file
