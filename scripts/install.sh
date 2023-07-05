@@ -65,8 +65,8 @@ echo "==========================================="
 
 cat <<EOF >oms_client.conf
 [program:oms_client]
-command=$('pwd')/run.sh
-directory=$('pwd')
+command=/home/pi/oms-client/scripts/run.sh
+directory=/home/pi/oms-client/scripts
 user=pi
 autostart=true
 autorestart=true
