@@ -93,6 +93,10 @@ if [ ! -d "videos" ]; then
     mkdir videos
 fi
 
+if [ ! -f "videos/playback_history.json" ]; then
+    touch videos/playback_history.json
+fi
+
 if [ ! -d "logs" ]; then
     mkdir logs
 fi
