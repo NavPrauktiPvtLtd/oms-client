@@ -38,7 +38,7 @@ class URLHandler:
         self.data = data
         self.searialNo = serialNo
 
-    def __del__(self):
+    def __del__(self):                                                                                                                                                                                                                                                                                  
         logger.debug('Destructor called, URLHandler deleted.')
 
     def play(self):
@@ -60,9 +60,9 @@ class URLHandler:
                         "type": "Url", "mediaId": self.data.url.id}})
         logger.info(f'Opening browser with link : {url_to_open}')
         if DEVICE_TYPE == 1:
-            subprocess.call(["firefox", f"--kiosk={url_to_open}"])
+            subprocess.call(["firefox", "--kiosk={url_to_open}"])
         else:
-            subprocess.call(["chromium-browser", f"--kiosk --no-sandbox {url_to_open}"])
+            subprocess.call(["runuser","-u","pi","--","chromium-browser","--kiosk", "--no-zygote-sandbox", url_to_open])
 
     # need fix: it will close the browser even if another url is playing
     def close_browser(self, seconds):

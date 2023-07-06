@@ -1,1 +1,2 @@
-sudo supervisorctl restart oms_client
+sudo pkill python
+sudo service supervisor restart
