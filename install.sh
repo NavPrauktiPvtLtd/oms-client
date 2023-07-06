@@ -9,13 +9,15 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-
 chmod +x "./scripts/actions.sh"
-chmod +x "./scripts/delete-log.sh"
-chmod +x "./scripts/restart.sh"
-chmod +x "./scripts/uninstall.sh"
-chmod +x "./scripts/stop.sh"
 
+chmod +x "./scripts/delete-log.sh"
+
+chmod +x "./scripts/restart.sh"
+
+chmod +x "./scripts/uninstall.sh"
+
+chmod +x "./scripts/stop.sh"
 
 read -p "Enter SERIAL_NO: " SERIAL_NO
 
@@ -52,9 +54,6 @@ dpkg -s python3-pip 2>/dev/null >/dev/null || sudo apt install python3-pip -y
 
 dpkg -s supervisor 2>/dev/null >/dev/null || sudo apt install supervisor -y
 
-
-
-
 #Create supervisor conf file
 
 echo "Creating supervisor config file"
@@ -73,9 +72,6 @@ stdout_logfile=/home/pi/oms-client/logs/out.log
 EOF
 
 cp -f oms_client.conf /etc/supervisor/conf.d/
-
-
-
 
 cat << EOF > .env
 SERIAL_NO=$SERIAL_NO
@@ -99,16 +95,17 @@ if [ ! -d "logs" ]; then
     mkdir logs
 fi
 
-pip3 install -r /home/pi/oms-client/requirements.txt
+dir=$('pwd')
+
+pip3 install -r ${dir}/requirements.txt
 
 echo "adding cron jobs"
 
-dir=$('pwd')
 # this will run every 30 minutes
-(crontab -l | grep -v update.sh ; echo "*/30 * * * * ${dir}/update.sh >> ${log_dir}/cron.log 2>&1") | crontab -
+(crontab -l | grep -v update.sh ; echo "*/30 * * * * ${dir}/update.sh >> ${dir}/logs/cron.log 2>&1") | crontab -
 
 # this will run every month
-(crontab -l | grep -v delete-log ; echo "0 0 1 * * ${dir}/scripts/delete-log.sh >> ${log_dir}/cron.log 2>&1") | crontab -
+(crontab -l | grep -v delete-log ; echo "0 0 1 * * ${dir}/scripts/delete-log.sh >> ${dir}/oms-client/cron.log 2>&1") | crontab -
 
 service supervisor restart
 
