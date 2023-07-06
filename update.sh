@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd "$(dirname "$0")/.."
-
 # Fetch changes from the remote repository
 git fetch
 
@@ -13,7 +11,7 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
     echo "updates available"
 
     if git pull; then
-        sudo chmod +x actions.sh
+        sudo chmod +x ./scripts/actions.sh
 
         # first stop the already running application
         sudo supervisorctl stop oms_client
