@@ -99,14 +99,6 @@ dir=$('pwd')
 
 pip3 install -r ${dir}/requirements.txt
 
-echo "adding cron jobs"
-
-# this will run every 30 minutes
-(crontab -l | grep -v update.sh ; echo "*/30 * * * * ${dir}/update.sh >> ${dir}/logs/cron.log 2>&1") | crontab -
-
-# this will run every month
-(crontab -l | grep -v delete-log ; echo "0 0 1 * * ${dir}/scripts/delete-log.sh >> ${dir}/oms-client/cron.log 2>&1") | crontab -
-
 sudo pkill python
 
 service supervisor restart
