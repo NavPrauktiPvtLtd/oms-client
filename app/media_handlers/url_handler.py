@@ -62,7 +62,7 @@ class URLHandler:
         if DEVICE_TYPE == 1:
             subprocess.call(["firefox", f"--kiosk={url_to_open}"])
         else:
-            subprocess.call(["chromium-browser", f"--kiosk --no-zygote-sandbox {url_to_open}"])
+            subprocess.call(["chromium-browser", f"--kiosk --no-sandbox {url_to_open}"])
 
     # need fix: it will close the browser even if another url is playing
     def close_browser(self, seconds):
