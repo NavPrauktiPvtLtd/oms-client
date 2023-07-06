@@ -91,6 +91,8 @@ class APP:
             client.subscribe(format_topic_name(Topic.PLAY_PLAYLIST))
             client.subscribe(format_topic_name(Topic.SET_SCHEDULE))
             client.subscribe(format_topic_name(Topic.SET_DEFAULT_VIDEO))
+            client.subscribe(format_topic_name(Topic.RESTART_NODE))
+            client.subscribe(format_topic_name(Topic.NODE_STATE))
             publish_message(client, Topic.REQUEST_SCHEDULE, {
                             "serialNo": self.serialNo}, qos=1)
             self.request_default_video()
@@ -209,6 +211,12 @@ class APP:
         continuous_thread = ScheduleThread()
         continuous_thread.start()
         return cease_continuous_run
+    
+    def on_update_node(self, client, userdata, message):
+        subprocess.call(["sudo", "./home/pi/oms-client/update.sh"]) 
+
+    def on_restart_node(self, client, userdata, message):
+        subprocess.call(["sudo", "reboot"]) 
 
     def start(self):
         try:
@@ -234,6 +242,10 @@ class APP:
                 format_topic_name(Topic.SET_SCHEDULE), self.on_set_schedule)
             self.client.message_callback_add(
                 format_topic_name(Topic.SET_DEFAULT_VIDEO), self.on_set_default_video)
+            self.client.message_callback_add(
+                format_topic_name(Topic.UPDATE_NODE), self.on_update_node)
+            self.client.message_callback_add(
+                format_topic_name(Topic.RESTART_NODE), self.on_restart_node)
             self.stop_run_pending_jobs = self.run_pending_jobs()
             self.client.loop_forever()
         except Exception as e:

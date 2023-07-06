@@ -10,8 +10,6 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 
-chmod +x "./scripts/update.sh"
-chmod +x "./scripts/cron.sh"
 chmod +x "./scripts/actions.sh"
 chmod +x "./scripts/delete-log.sh"
 chmod +x "./scripts/restart.sh"
@@ -105,7 +103,12 @@ pip3 install -r /home/pi/oms-client/requirements.txt
 
 echo "adding cron jobs"
 
-sudo ./scripts/cron.sh
+dir=$('pwd')
+# this will run every 30 minutes
+(crontab -l | grep -v update.sh ; echo "*/30 * * * * ${dir}/update.sh >> ${log_dir}/cron.log 2>&1") | crontab -
+
+# this will run every month
+(crontab -l | grep -v delete-log ; echo "0 0 1 * * ${dir}/scripts/delete-log.sh >> ${log_dir}/cron.log 2>&1") | crontab -
 
 service supervisor restart
 
