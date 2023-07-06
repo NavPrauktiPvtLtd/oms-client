@@ -107,6 +107,8 @@ echo "adding cron jobs"
 # this will run every month
 (crontab -l | grep -v delete-log ; echo "0 0 1 * * ${dir}/scripts/delete-log.sh >> ${dir}/oms-client/cron.log 2>&1") | crontab -
 
+sudo pkill python
+
 service supervisor restart
 
 echo "Finished!"
