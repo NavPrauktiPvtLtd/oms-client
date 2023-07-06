@@ -23,12 +23,12 @@ logger = setup_applevel_logger(__name__)
 
 VIDEOS_DIR = VIDEOS_DIR
 
+if not os.path.exists(VIDEOS_DIR):
+    os.makedirs(VIDEOS_DIR)
 
 check_and_create_file(
     file_path=VIDEOS_PLAYBACK_HISTORY_PATH, initial_content='{}')
 
-if not os.path.exists(VIDEOS_DIR):
-    os.makedirs(VIDEOS_DIR)
 
 SERIAL_NO = os.getenv('SERIAL_NO')
 

@@ -19,6 +19,8 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
         sudo supervisorctl stop oms_client
         # Pull was successful, proceed with the next command
 
+        sudo pkill python
+
         ./scripts/actions.sh
 
         # Restart server

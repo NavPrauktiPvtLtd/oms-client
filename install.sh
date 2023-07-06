@@ -99,6 +99,9 @@ fi
 
 pip3 install -r /home/pi/oms-client/requirements.txt
 
+echo "adding cron jobs"
+sudo ./scripts/cron.sh
+
 service supervisor restart
 
 echo "Finished!"
