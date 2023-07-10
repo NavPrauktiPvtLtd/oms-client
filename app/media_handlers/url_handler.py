@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-import json
 from logger.logger import setup_applevel_logger
 from threading import Thread
 import paho.mqtt.client as mqtt
@@ -51,7 +50,7 @@ class URLHandler:
             t2 = Thread(target=self.close_browser, args=(self.data.duration,))
             t2.start()
         t1 = Thread(target=self.open_browser)
-        t1.start()
+        t1.start() 
         # schedule.idle_seconds()
 
     def open_browser(self):
