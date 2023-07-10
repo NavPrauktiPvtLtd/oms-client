@@ -213,12 +213,20 @@ class APP:
         return cease_continuous_run
     
     def on_update_node(self, client, userdata, message):
-        subprocess.call(["sudo", "./home/pi/oms-client/update.sh"]) 
+        try:
+            logger.debug("Updating.....")
+            subprocess.call(["sudo", "./home/pi/oms-client/update.sh"])
+        except Exception  as e:
+            logger.error(e) 
 
     def on_restart_node(self, client, userdata, message):
-        subprocess.call(["sudo", "reboot"]) 
+        try:
+            logger.debug("Restarting node.....")
+            subprocess.call(["sudo", "reboot"]) 
+        except Exception  as e:
+            logger.error(e)
 
-    def start(self):
+    def start(self):      
         try:
             self.client = mqtt.Client(self.serialNo)
             self.player = Player(self.client, self.serialNo)
