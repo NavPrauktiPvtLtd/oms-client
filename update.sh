@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/pi/oms-client
+
 # Fetch changes from the remote repository
 git fetch
 
