@@ -13,7 +13,7 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
     echo "updates available"
 
     if git pull; then
-        sudo chmod +x ./scripts/actions.sh
+        sudo chmod +x /home/pi/oms-client/scripts/actions.sh
 
         # first stop the already running application
         sudo supervisorctl stop oms_client
@@ -21,7 +21,7 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
 
         sudo pkill python
 
-        ./scripts/actions.sh
+        ./home/pi/oms-client/scripts/actions.sh
 
         # Restart server
         sudo service supervisor restart

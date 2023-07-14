@@ -20,13 +20,22 @@
 1. User account must be created as "pi"
 
 - create cron jobs
+
   - _/30 _ \* \* \* /home/pi/oms-client/update.sh
+
+- install unclutter to hide mouse cursor
+
+  - sudo apt install unclutter
+
+- add unclutter to autostart
+  - path: /etc/xdg/lxsession/LXDE/autostart
+  - @unclutter -idle 0
 
 ## Misc
 
 - tail log file
 
 ```bash
-  sudo tail -f /var/log/oms.err.log
-  sudo tail -f /var/log/oms.out.log
+  sudo tail -f /home/pi/oms-client/logs/err.log
+  sudo tail -f /home/pi/oms-client/logs/out.log
 ```
