@@ -39,13 +39,16 @@ class Player:
             self.playbackID = None
             event_manager = self.media_player.event_manager()
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerPlayed, self.on_player_played)  # type: ignore
+                vlc.EventType.MediaListPlayerPlayed, self.on_player_played
+            )  # type: ignore
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerStopped, self.on_player_stopped)  # type: ignore
+                vlc.EventType.MediaListPlayerStopped, self.on_player_stopped
+            )  # type: ignore
             event_manager.event_attach(
-                vlc.EventType.MediaListPlayerNextItemSet, self.on_player_next)  # type: ignore
+                vlc.EventType.MediaListPlayerNextItemSet, self.on_player_next
+            )  # type: ignore
         else:
-            logger.error('Media player is None')
+            logger.error("Media player is None")
 
     def play(self, playlist: List[Video], loop: bool):
         self.reset_player_conf()
@@ -53,7 +56,7 @@ class Player:
             return
 
         if len(playlist) == 0:
-            logger.error('playlist is empty')
+            logger.error("playlist is empty")
             return
 
         self.terminate()
@@ -69,16 +72,16 @@ class Player:
 
         self.total_videos = self.media_list.count()
 
-        logger.debug(f'total video: {self.total_videos}')
+        logger.debug(f"total video: {self.total_videos}")
 
         if loop:
-            logger.debug('setting loop to true')
-            self.media_player.set_playback_mode(
-                vlc.PlaybackMode.loop)  # type: ignore
+            logger.debug("setting loop to true")
+            self.media_player.set_playback_mode(vlc.PlaybackMode.loop)  # type: ignore
         else:
-            logger.debug('setting loop to false')
+            logger.debug("setting loop to false")
             self.media_player.set_playback_mode(
-                vlc.PlaybackMode.default)  # type: ignore
+                vlc.PlaybackMode.default
+            )  # type: ignore
         self.media_player.play()
 
         if not loop:
@@ -108,23 +111,25 @@ class Player:
             logger.error(e)
 
     def on_player_stopped(self, event):
-        publish_message(self.client, Topic.NODE_STATE, {
-                        "serialNo": self.serialNo, "status": "Idle"}, qos=1)
+        # publish_message(
+        #     self.client,
+        #     Topic.NODE_STATE,
+        #     {"serialNo": self.serialNo, "status": "Idle"},
+        #     qos=1,
+        # )
         current_video = self.get_current_video()
         current_playbackID = self.playbackID
 
         if current_video and current_playbackID:
-            self.send_video_ended_message(
-                current_playbackID, current_video.id)
+            self.send_video_ended_message(current_playbackID, current_video.id)
 
         self.reset_player_conf()
-        logger.debug(f'Video Player Stopped')
+        logger.debug(f"Video Player Stopped")
 
     def on_player_played(self, event):
         pass
 
     def on_player_next(self, event):
-
         if not self.playbackID:
             self.playbackID = uuid.uuid4()
         if self.playlist_index == None:
@@ -134,21 +139,19 @@ class Player:
                 self.playlist_index = self.playlist_index + 1
             else:
                 self.playlist_index = 0
-        logger.debug(f'current index: {self.playlist_index}')
+        logger.debug(f"current index: {self.playlist_index}")
         current_video = self.get_current_video()
         previous_video = self.get_previous_video()
 
         if current_video:
-            logger.debug(f'Video Next (current): {current_video.name}')
+            logger.debug(f"Video Next (current): {current_video.name}")
         if previous_video:
-            logger.debug(f'Video Next (previous): {previous_video.name}')
+            logger.debug(f"Video Next (previous): {previous_video.name}")
 
         if previous_video and self.playbackID:
-            self.send_video_ended_message(
-                self.playbackID, previous_video.id)
+            self.send_video_ended_message(self.playbackID, previous_video.id)
         if current_video:
-            self.send_video_started_message(
-                self.playbackID, current_video.id)
+            self.send_video_started_message(self.playbackID, current_video.id)
 
     def get_current_video(self) -> Video:
         if len(self.playlist) == 0 or self.playlist_index == None:
@@ -168,7 +171,7 @@ class Player:
         return self.playlist[self.playlist_index - 1]
 
     def reset_player_conf(self):
-        logger.debug('Resetting player config')
+        logger.debug("Resetting player config")
         # release the media list here
         # if self.media_list:
         #     self.media_list.release()
@@ -182,25 +185,27 @@ class Player:
         self.playbackID = None
 
     def send_video_started_message(self, playbackID, videoID):
-        start_time = datetime.datetime.now()
-        serialNo = self.serialNo
-        data = {
-            'start_time': str(start_time),
-            'serialNo': serialNo,
-            'videoPlaybackId': str(playbackID),
-            'videoId': videoID
-        }
+        pass
+        # start_time = datetime.datetime.now()
+        # serialNo = self.serialNo
+        # data = {
+        #     "start_time": str(start_time),
+        #     "serialNo": serialNo,
+        #     "videoPlaybackId": str(playbackID),
+        #     "videoId": videoID,
+        # }
 
-        publish_message(self.client, Topic.VIDEO_PLAYBACK, data, qos=1)
+        # publish_message(self.client, Topic.VIDEO_PLAYBACK, data, qos=1)
 
     def send_video_ended_message(self, playbackID, videoID):
-        end_time = datetime.datetime.now()
-        serialNo = self.serialNo
-        data = {
-            'end_time': str(end_time),
-            'serialNo': serialNo,
-            'videoPlaybackId': str(playbackID),
-            'videoId': videoID
-        }
+        pass
+        # end_time = datetime.datetime.now()
+        # serialNo = self.serialNo
+        # data = {
+        #     "end_time": str(end_time),
+        #     "serialNo": serialNo,
+        #     "videoPlaybackId": str(playbackID),
+        #     "videoId": videoID,
+        # }
 
-        publish_message(self.client, Topic.VIDEO_PLAYBACK, data, qos=1)
+        # publish_message(self.client, Topic.VIDEO_PLAYBACK, data, qos=1)

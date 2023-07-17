@@ -21,7 +21,14 @@ class PlaylistData(BaseModel):
 
 
 class PlaylistHandler:
-    def __init__(self, client: mqtt.Client, data: PlaylistData, player: PlaylistPlayer, serialNo: str, dir: str):
+    def __init__(
+        self,
+        client: mqtt.Client,
+        data: PlaylistData,
+        player: PlaylistPlayer,
+        serialNo: str,
+        dir: str,
+    ):
         self.client = client
         self.data = data
         self.player = player
@@ -29,14 +36,14 @@ class PlaylistHandler:
         self.searialNo = serialNo
 
     def __del__(self):
-        logger.debug('Destructor called, PlaylistHandler deleted.')
+        logger.debug("Destructor called, PlaylistHandler deleted.")
 
     def play(self):
         id = self.data.id
         name = self.data.name
         videos = self.data.videos
         loop = False
-        if (self.data.loop):
+        if self.data.loop:
             loop = True
 
         filepath = self.file_path(name)
@@ -49,13 +56,19 @@ class PlaylistHandler:
         self.play_playlist(videos, loop, id)
 
     def download_video_from_url(self, url: str, path: str):
-        publish_message(self.client, Topic.NODE_STATE, {
-                        "serialNo": self.searialNo, "status": "Processing"})
+        publish_message(
+            self.client,
+            Topic.NODE_STATE,
+            {"serialNo": self.searialNo, "status": "Processing"},
+        )
         r = requests.get(url)
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             f.write(r.content)
-        publish_message(self.client, Topic.NODE_STATE, {
-                        "serialNo": self.searialNo, "status": "Idle"})
+        publish_message(
+            self.client,
+            Topic.NODE_STATE,
+            {"serialNo": self.searialNo, "status": "Idle"},
+        )
 
     def play_playlist(self, videos: List[Video], loop: bool, id: str):
         playlist_paths = []
@@ -64,8 +77,16 @@ class PlaylistHandler:
             video.path = self.file_path(video.name)
             playlist_paths.append(video)
 
-        publish_message(self.client, Topic.NODE_STATE, {
-                        "serialNo": self.searialNo, "status": "Playing", "playingData": {"type": "VideoList", "mediaId": id}})
+        publish_message(
+            self.client,
+            Topic.NODE_STATE,
+            {
+                "serialNo": self.searialNo,
+                "status": "Playing",
+                "playingData": {"type": "VideoList", "mediaId": id},
+            },
+        )
         self.player.play(id, playlist_paths, loop)
 
-    def file_path(self, x): return os.path.join(self.dir, x)
+    def file_path(self, x):
+        return os.path.join(self.dir, x)

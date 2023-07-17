@@ -100,9 +100,9 @@ class APP:
             client.subscribe(format_topic_name(Topic.SET_DEFAULT_VIDEO))
             client.subscribe(format_topic_name(Topic.RESTART_NODE))
             client.subscribe(format_topic_name(Topic.NODE_STATE))
-            publish_message(
-                client, Topic.REQUEST_SCHEDULE, {"serialNo": self.serialNo}, qos=1
-            )
+            # publish_message(
+            #     client, Topic.REQUEST_SCHEDULE, {"serialNo": self.serialNo}, qos=1
+            # )
             self.request_default_video()
 
         else:
@@ -169,9 +169,10 @@ class APP:
             logger.error(e)
 
     def request_default_video(self):
-        publish_message(
-            self.client, Topic.REQUEST_DEFAULT_VIDEO, {"serialNo": self.serialNo}, qos=1
-        )
+        # publish_message(
+        #     self.client, Topic.REQUEST_DEFAULT_VIDEO, {"serialNo": self.serialNo}, qos=1
+        # )
+        passs
 
     def on_set_default_video(self, client, userdata, message):
         if not self.player:
@@ -201,6 +202,7 @@ class APP:
             self.player.terminate()
         if self.playlist_player:
             self.playlist_player.terminate()
+
         publish_message(
             self.client, "NODE_STATE", {"serialNo": self.serialNo, "status": "Idle"}
         )
@@ -248,8 +250,8 @@ class APP:
 
     def on_update_node(self, client, userdata, message):
         try:
-            logger.debug("Updating.....")
-            subprocess.call(["sudo", "./home/pi/oms-client/update.sh"])
+            logger.info("Updating.....")
+            subprocess.call(["sudo", "/home/pi/oms-client/update.sh"])
         except Exception as e:
             logger.error(e)
 
