@@ -28,8 +28,12 @@
   - sudo apt install unclutter
 
 - add unclutter to autostart
+
   - path: /etc/xdg/lxsession/LXDE/autostart
   - @unclutter -idle 0
+
+- git error fix
+  - git config --system --add safe.directory '\*'
 
 ## Misc
 
