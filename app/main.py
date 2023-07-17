@@ -172,7 +172,7 @@ class APP:
         # publish_message(
         #     self.client, Topic.REQUEST_DEFAULT_VIDEO, {"serialNo": self.serialNo}, qos=1
         # )
-        passs
+        pass
 
     def on_set_default_video(self, client, userdata, message):
         if not self.player:
