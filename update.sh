@@ -21,7 +21,7 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
 
         sudo pkill python
 
-        ./home/pi/oms-client/scripts/actions.sh
+        sudo /home/pi/oms-client/scripts/actions.sh
 
         # Restart server
         sudo service supervisor restart
