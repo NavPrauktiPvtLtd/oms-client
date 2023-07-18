@@ -100,6 +100,8 @@ class APP:
             client.subscribe(format_topic_name(Topic.SET_DEFAULT_VIDEO))
             client.subscribe(format_topic_name(Topic.RESTART_NODE))
             client.subscribe(format_topic_name(Topic.NODE_STATE))
+            client.subscribe(format_topic_name(Topic.UPDATE_NODE))
+
             # publish_message(
             #     client, Topic.REQUEST_SCHEDULE, {"serialNo": self.serialNo}, qos=1
             # )
