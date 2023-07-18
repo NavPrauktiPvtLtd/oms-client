@@ -6,7 +6,7 @@ APP_LOGGER_NAME = "oms-logger"
 
 def setup_applevel_logger(logger_name=APP_LOGGER_NAME, file_name=None):
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
