@@ -252,7 +252,7 @@ class APP:
 
     def on_update_node(self, client, userdata, message):
         try:
-            logger.info("Updating.....")
+            logger.info("Updating")
             subprocess.call(["sudo", "/home/pi/oms-client/update.sh"])
         except Exception as e:
             logger.error(e)
