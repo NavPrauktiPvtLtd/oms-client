@@ -192,7 +192,8 @@ class PlaylistPlayer:
         # release the media list here
         # if self.media_list:
         #     self.media_list.release()
-        for i in range(0, self.total_videos):
+
+        for i in range(0, self.media_list.count()):
             self.media_list.remove_index(i)
 
         self.playlist = []
