@@ -204,7 +204,7 @@ class APP:
             self.player.terminate()
         if self.playlist_player:
             self.playlist_player.terminate()
-
+        subprocess.call(["pkill", "vlc"])
         publish_message(
             self.client, "NODE_STATE", {"serialNo": self.serialNo, "status": "Idle"}
         )
