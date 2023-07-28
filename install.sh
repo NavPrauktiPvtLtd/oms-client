@@ -9,15 +9,17 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-chmod +x "./scripts/actions.sh"
+dir=/home/pi/oms-client
 
-chmod +x "./scripts/delete-log.sh"
+chmod +x ${dir}/scripts/actions.sh
 
-chmod +x "./scripts/restart.sh"
+chmod +x ${dir}/scripts/delete-log.sh
 
-chmod +x "./scripts/uninstall.sh"
+chmod +x ${dir}/scripts/restart.sh
 
-chmod +x "./scripts/stop.sh"
+chmod +x ${dir}/scripts/uninstall.sh
+
+chmod +x ${dir}/scripts/stop.sh
 
 read -p "Enter SERIAL_NO: " SERIAL_NO
 
@@ -29,6 +31,10 @@ read -p "Enter MQTT_HOST: " MQTT_HOST
 read -p "Enter MQTT username: " MQTT_USERNAME
 
 read -p "Enter MQTT password: " MQTT_PASSWORD
+
+read -p "Enter Wifi SSID: " WIFI_SSID
+
+read -p "Enter Wifi password: " WIFI_PASSWORD
 
 read -p "Enter DISPLAY [default: :0]: " DISPLAY
 DISPLAY=${DISPLAY:-:0}  # Set default value if empty
@@ -62,16 +68,16 @@ echo "==========================================="
 
 cat <<EOF >oms_client.conf
 [program:oms_client]
-command=$('pwd')/run.sh
-directory=$('pwd')
+command=${dir}/run.sh
+directory=${dir}
 user=pi
 autostart=true
 autorestart=true
-stderr_logfile=/home/pi/oms-client/logs/err.log
-stdout_logfile=/home/pi/oms-client/logs/out.log
+stderr_logfile=${dir}/logs/err.log
+stdout_logfile=${dir}/logs/out.log
 EOF
 
-cp -f oms_client.conf /etc/supervisor/conf.d/
+cp -f ${dir}/oms_client.conf /etc/supervisor/conf.d/
 
 cat << EOF > .env
 SERIAL_NO=$SERIAL_NO
@@ -83,19 +89,24 @@ DISPLAY=$DISPLAY
 DEVICE_TYPE=$DEVICE_TYPE
 EOF
 
-if [ ! -d "videos" ]; then
-    mkdir videos
+if [ ! -d ${dir}/videos ]; then
+    mkdir ${dir}/videos
 fi
 
-if [ ! -f "videos/playback_history.json" ]; then
-    touch videos/playback_history.json
+if [ ! -f ${dir}/wifi_credentials.txt ]; then 
+    touch ${dir}/wifi_credentials.txt
 fi
 
-if [ ! -d "logs" ]; then
-    mkdir logs
+if [ ! -f ${dir}/videos/playback_history.json ]; then
+    touch ${dir}/videos/playback_history.json
 fi
 
-dir=$('pwd')
+if [ ! -d ${dir}/logs ]; then
+    mkdir ${dir}/logs
+fi
+
+echo "$WIFI_SSID" > ${dir}/wifi_credentials.txt
+echo "$WIFI_PASSWORD" >> ${dir}/wifi_credentials.txt
 
 pip3 install -r ${dir}/requirements.txt
 

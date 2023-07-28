@@ -101,6 +101,7 @@ class APP:
             client.subscribe(format_topic_name(Topic.RESTART_NODE))
             client.subscribe(format_topic_name(Topic.NODE_STATE))
             client.subscribe(format_topic_name(Topic.UPDATE_NODE))
+            client.subscribe(format_topic_name(Topic.SETUP_WIFI))
 
             # publish_message(
             #     client, Topic.REQUEST_SCHEDULE, {"serialNo": self.serialNo}, qos=1
@@ -210,6 +211,20 @@ class APP:
             self.client, "NODE_STATE", {"serialNo": self.serialNo, "status": "Idle"}
         )
 
+    def on_set_up_wifi(self, client, userdata, message):
+        logger.info("Changing wifi settings")
+
+        msgData = get_data_from_message(message)
+
+        if msgData:
+            ssid = msgData["ssid"]
+            password = msgData["password"]
+            if ssid and password:
+                subprocess.call(["sudo", "echo", "{ssid}", ">" ,"/home/pi/oms-client/wifi_credentials.txt"])
+                subprocess.call(["sudo", "echo", "{password}", ">>" ,"/home/pi/oms-client/wifi_credentials.txt"])
+            else:
+                logger.error(f"ssid or password not found: {msgData}")
+
     def on_set_schedule(self, client, userdata, message):
         if not self.player or not self.playlist_player:
             return
@@ -305,6 +320,9 @@ class APP:
             )
             self.client.message_callback_add(
                 format_topic_name(Topic.RESTART_NODE), self.on_restart_node
+            )
+            self.client.message_callback_add(
+                format_topic_name(Topic.SETUP_WIFI), self.on_set_up_wifi
             )
             self.stop_run_pending_jobs = self.run_pending_jobs()
             self.client.loop_forever()
