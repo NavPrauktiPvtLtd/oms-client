@@ -14,12 +14,12 @@ if [ -z "$wifi_device" ]; then
 fi
 
 
-if [ ! -f "wifi_credentials.txt" ]; then
+if [ ! -f /home/pi/oms-client/wifi_credentials.txt ]; then
 echo "WiFi credential file 'wifi_credential.txt' not found."
 exit 1
 fi
 
-readarray -t credentials < "wifi_credentials.txt"
+readarray -t credentials < /home/pi/oms-client/wifi_credentials.txt
 if [ ${#credentials[@]} -lt 2 ]; then
 echo "Invalid credential file format. It should contain SSID and password on separate lines."
 exit 1

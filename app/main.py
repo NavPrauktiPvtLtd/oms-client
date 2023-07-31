@@ -220,8 +220,9 @@ class APP:
             ssid = msgData["ssid"]
             password = msgData["password"]
             if ssid and password:
-                subprocess.call(["sudo", "echo", "{ssid}", ">" ,"/home/pi/oms-client/wifi_credentials.txt"])
-                subprocess.call(["sudo", "echo", "{password}", ">>" ,"/home/pi/oms-client/wifi_credentials.txt"])
+                subprocess.call(
+                    ["sudo", "/home/pi/oms-client/store_wifi_cred.sh", ssid, password]
+                )
             else:
                 logger.error(f"ssid or password not found: {msgData}")
 

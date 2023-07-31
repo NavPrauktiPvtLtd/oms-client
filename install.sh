@@ -21,6 +21,8 @@ chmod +x ${dir}/scripts/uninstall.sh
 
 chmod +x ${dir}/scripts/stop.sh
 
+chmod +x ${dir}/store_wifi_cred.sh
+
 read -p "Enter SERIAL_NO: " SERIAL_NO
 
 read -p "Enter MAX_VIDEO_STORAGE_SIZE [default: 20000000000]: " MAX_VIDEO_STORAGE_SIZE
