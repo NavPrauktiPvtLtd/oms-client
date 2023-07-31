@@ -12,6 +12,8 @@ local_head=$(git rev-parse HEAD)
 if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
     echo "updates available"
 
+    git reset HEAD --hard
+
     if git pull; then
         sudo chmod +x /home/pi/oms-client/scripts/actions.sh
 
