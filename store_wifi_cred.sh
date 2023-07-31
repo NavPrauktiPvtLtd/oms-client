@@ -10,5 +10,5 @@ fi
 ssid="$1"
 password="$2"
 
-sudo echo $ssid > new.txt
-sudo echo $password >> new.txt
+sudo echo $ssid > /home/pi/oms-client/wifi_credentials.txt
+sudo echo $password >> /home/pi/oms-client/wifi_credentials.txt
