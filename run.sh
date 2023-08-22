@@ -46,6 +46,8 @@ local_head=$(git rev-parse HEAD)
 if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
     echo "updates available"
 
+    git reset HEAD --hard
+
     if git pull; then
         sudo chmod +x /home/pi/oms-client/scripts/actions.sh
 
@@ -61,9 +63,12 @@ if [[ "$(git rev-parse FETCH_HEAD)" != "$local_head" ]]; then
         sudo service supervisor restart
     else
         echo "Git pull failed. Unable to proceed."
+        echo "Running app without update...."
+        sudo python3 app/main.py
     fi
 else
     echo "No updates found"
     echo "Running app...."
     sudo python3 app/main.py
 fi
+ 
