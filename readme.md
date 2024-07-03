@@ -33,7 +33,7 @@
   - @unclutter -idle 0
 
 - git error fix
-  - git config --system --add safe.directory '\*'
+  - git config --global --add safe.directory /home/pi/oms-client
 
 ## Misc
 

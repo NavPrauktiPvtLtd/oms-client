@@ -4,3 +4,6 @@
 .env
 /logs
 wifi_credentials.txt
+.env.1
+.env.2
+.env.3 
