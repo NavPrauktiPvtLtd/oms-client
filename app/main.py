@@ -210,6 +210,7 @@ class APP:
         publish_message(
             self.client, "NODE_STATE", {"serialNo": self.serialNo, "status": "Idle"}
         )
+        time.sleep(1)
 
     def on_set_up_wifi(self, client, userdata, message):
         logger.info("Changing wifi settings")
