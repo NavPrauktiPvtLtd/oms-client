@@ -111,12 +111,12 @@ class Player:
             logger.error(e)
 
     def on_player_stopped(self, event):
-        # publish_message(
-        #     self.client,
-        #     Topic.NODE_STATE,
-        #     {"serialNo": self.serialNo, "status": "Idle"},
-        #     qos=1,
-        # )
+        publish_message(
+            self.client,
+            Topic.NODE_STATE,
+            {"serialNo": self.serialNo, "status": "Idle"},
+            qos=1,
+        )
         current_video = self.get_current_video()
         current_playbackID = self.playbackID
 
