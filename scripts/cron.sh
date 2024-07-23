@@ -7,7 +7,7 @@ log_dir=/home/pi/oms-client/scripts/logs
 chmod +x "/home/pi/oms-client/update.sh"
 
 # this will run every 30 minutes
-(sudo crontab -l | grep -v update.sh ; echo "*/30 * * * * /home/pi/oms-client/update.sh >> /home/pi/oms-client/logs/cron.log 2>&1") | crontab -
+# (sudo crontab -l | grep -v update.sh ; echo "*/30 * * * * /home/pi/oms-client/update.sh >> /home/pi/oms-client/logs/cron.log 2>&1") | crontab -
 
 # cron job to delete log files
 
