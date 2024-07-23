@@ -106,7 +106,8 @@ class Player:
         if not self.media_player:
             return
         try:
-            self.media_player.stop()
+            if self.media_player.is_playing():
+                self.media_player.stop()
         except Exception as e:
             logger.error(e)
 

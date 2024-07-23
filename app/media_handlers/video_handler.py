@@ -75,6 +75,8 @@ class VideoHandler:
 
     def play_video(self):
         logger.debug(self.data.video)
+        publish_message(self.client, Topic.NODE_STATE, {"serialNo": self.searialNo, "status": "Playing", "playingData": {
+                        "type": "Video", "mediaId": self.data.video.id}})
         t1 = Thread(target=self.player.play, args=(
             [self.data.video], self.data.loop,))
         t1.start()

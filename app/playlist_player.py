@@ -122,7 +122,8 @@ class PlaylistPlayer:
         if not self.media_player:
             return
         try:
-            self.media_player.stop()
+            if self.media_player.is_playing():
+                self.media_player.stop()
         except Exception as e:
             logger.error(e)
 
@@ -223,7 +224,7 @@ class PlaylistPlayer:
             "videoListId": self.playlistID,
         }
 
-        publish_message(self.client, Topic.PLAY_PLAYLIST, data, qos=1)
+        # publish_message(self.client, Topic.PLAY_PLAYLIST, data, qos=1)
 
     def send_playlist_ended_message(self):
         end_time = datetime.datetime.now()
@@ -235,7 +236,7 @@ class PlaylistPlayer:
             "videoListId": self.playlistID,
         }
 
-        publish_message(self.client, Topic.PLAY_PLAYLIST, data, qos=1)
+        # publish_message(self.client, Topic.PLAY_PLAYLIST, data, qos=1)
 
     def send_playlist_video_played_message(self, video_id: str):
         end_time = datetime.datetime.now()
@@ -247,4 +248,4 @@ class PlaylistPlayer:
             "playlistPlaybackVideoId": self.get_video_playback_id(video_id),
             "end_time": str(end_time),
         }
-        publish_message(self.client, Topic.PLAYLIST_PLAYBACK_VIDEO, data, qos=1)
+        # publish_message(self.client, Topic.PLAYLIST_PLAYBACK_VIDEO, data, qos=1)
