@@ -33,6 +33,8 @@ fi
 wifi_ssid="${credentials[0]}"
 wifi_password="${credentials[1]}"
 
+sleep 10
+
 # Check if there is internet access
 if ! check_internet; then
     echo "No internet connection detected. Attempting to connect to Wi-Fi..."
