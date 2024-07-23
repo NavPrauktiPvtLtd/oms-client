@@ -144,6 +144,16 @@ class PlaylistPlayer:
         logger.debug(f"Video Player Stopped")
 
     def on_player_played(self, event):
+        if self.playlistID:
+            publish_message(
+                self.client,
+                Topic.NODE_STATE,
+                {
+                    "serialNo": self.searialNo,
+                    "status": "Playing",
+                    "playingData": {"type": "VideoList", "mediaId": self.playlistID},
+                },
+            )
         pass
 
     def on_player_next(self, event):

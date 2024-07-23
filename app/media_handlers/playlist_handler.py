@@ -77,15 +77,6 @@ class PlaylistHandler:
             video.path = self.file_path(video.name)
             playlist_paths.append(video)
 
-        publish_message(
-            self.client,
-            Topic.NODE_STATE,
-            {
-                "serialNo": self.searialNo,
-                "status": "Playing",
-                "playingData": {"type": "VideoList", "mediaId": id},
-            },
-        )
         self.player.play(id, playlist_paths, loop)
 
     def file_path(self, x):

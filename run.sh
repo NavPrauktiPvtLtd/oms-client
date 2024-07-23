@@ -3,6 +3,11 @@ export XAUTHORITY=/home/pi/.Xauthority
 export DISPLAY=:0 
 export XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
 
+sudo systemctl enable NetworkManager
+
+sudo systemctl start NetworkManager
+
+
 # Function to check internet connectivity
 check_internet() {
     # Ping Google's public DNS server to check for internet connectivity

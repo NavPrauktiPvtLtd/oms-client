@@ -127,7 +127,10 @@ class Player:
         logger.debug(f"Video Player Stopped")
 
     def on_player_played(self, event):
-        pass
+        if self.playbackID:
+            publish_message(self.client, Topic.NODE_STATE, {"serialNo": self.searialNo, "status": "Playing", "playingData": {
+                            "type": "Video", "mediaId": self.playbackID}})
+
 
     def on_player_next(self, event):
         if not self.playbackID:
